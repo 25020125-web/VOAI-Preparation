@@ -1,0 +1,842 @@
+[
+  {
+    "id": 1,
+    "tag": "Practice - NumPy, Pandas & Data Processing",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "NumPy, Pandas & Sequence Data Imputation",
+    "category": "Practice",
+    "prompt": "Bạn đang xử lý một tập dữ liệu chuỗi thời gian (time-series) ghi nhận nhịp tim bệnh nhân mỗi phút để dự đoán nguy cơ đột quỵ trong 1 giờ tới. Dữ liệu có khoảng 8% giá trị bị khuyết (NaN) rải rác. Một sinh viên viết đoạn mã Pandas sau để tiền xử lý trước khi chia tập `train/test` theo thời gian:\n```python\ndf['heart_rate'] = df['heart_rate'].fillna(df['heart_rate'].mean())\ndf['rolling_mean'] = df['heart_rate'].bfill().rolling(window=5).mean()\n```\nĐoạn mã trên mắc phải sai lầm nghiêm trọng nào về mặt phương pháp luận?",
+    "options": {
+      "A": "Hàm `rolling(window=5)` không thể chạy được sau khi đã dùng `fillna()`.",
+      "B": "Gây rò rỉ dữ liệu tương lai (Data Leakage / Look-ahead Bias) do tính `mean()` trên toàn bộ dữ liệu trước khi chia tập train/test và sử dụng `bfill()` (backward-fill) lấy giá trị tương lai điền cho quá khứ.",
+      "C": "Chuỗi thời gian bắt buộc phải dùng One-Hot Encoding thay vì tính trung bình trượt (sliding window).",
+      "D": "Hàm `mean()` làm tăng chiều dữ liệu khiến mô hình bị Overfitting."
+    },
+    "correct_answer": "B",
+    "explanation": "Trong dữ liệu chuỗi thời gian (sequence modeling), việc tính trung bình trên toàn bộ tập dữ liệu trước khi chia `train/validation/test` và dùng `bfill()` (lấy dữ liệu ở thời điểm $t+1$ điền cho thời điểm $t$) làm rò rỉ thông tin từ tương lai. Phương pháp đúng là chia tập theo mốc thời gian trước, sau đó dùng `ffill()` (forward-fill) hoặc thống kê chỉ tính trên tập `train`."
+  },
+  {
+    "id": 2,
+    "tag": "Practice - Scikit-learn & Cross-Validation",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "Scikit-learn Pipeline & Cross-Validation",
+    "category": "Practice",
+    "prompt": "Khi xây dựng mô hình phân loại trên tập dữ liệu bảng gồm 500 mẫu và 200 đặc trưng, một sinh viên thực hiện chuẩn hóa dữ liệu và đánh giá bằng K-Fold Cross-Validation như sau:\n```python\nscaler = StandardScaler()\nX_scaled = scaler.fit_transform(X)\nscores = cross_val_score(LogisticRegression(), X_scaled, y, cv=5)\n```\nDấu hiệu nào cho thấy quy trình này **không phù hợp** và cách khắc phục đúng trong `scikit-learn` là gì?",
+    "options": {
+      "A": "Điểm `cross_val_score` sẽ bị ước lượng lạc quan quá mức (over-optimistic) do `StandardScaler` đã khớp (`fit`) trên cả các fold dùng làm validation; cần bọc `StandardScaler` và `LogisticRegression` vào trong `sklearn.pipeline.Pipeline`.",
+      "B": "`StandardScaler` không thể dùng cho `LogisticRegression`; phải đổi sang `MinMaxScaler`.",
+      "C": "Số lượng fold `cv=5` là quá lớn đối với 500 mẫu; phải giảm xuống `cv=2`.",
+      "D": "Hàm `cross_val_score` tự động gọi lại `fit_transform` nên code trên hoàn toàn tối ưu."
+    },
+    "correct_answer": "A",
+    "explanation": "Gọi `fit_transform(X)` trước khi đưa vào `cross_val_score` làm thông tin trung bình và độ lệch chuẩn của validation fold rò rỉ vào quá trình huấn luyện. Sử dụng `Pipeline([('scaler', StandardScaler()), ('clf', LogisticRegression())])` đảm bảo `scaler.fit()` chỉ chạy trên training folds ở mỗi vòng lặp."
+  },
+  {
+    "id": 3,
+    "tag": "Practice - PyTorch Basics, Tensor Manipulation & GPU",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "PyTorch Basics, Tensor Broadcasting & GPU Memory",
+    "category": "Practice",
+    "prompt": "Cho đoạn mã huấn luyện và đánh giá mô hình PyTorch trên GPU như sau:\n```python\nmodel.eval()\nval_loss = 0.0\nfor x, y in val_loader:\n    x, y = x.to('cuda'), y.to('cuda')\n    pred = model(x) # pred shape: (batch_size, 1), y shape: (batch_size,)\n    loss = ((pred - y) ** 2).mean()\n    val_loss += loss\n```\nSau vài epoch, chương trình báo lỗi `CUDA out of memory` ngay trong vòng lặp validation và kết quả `loss` tính ra cũng sai lệch mặc dù mô hình dự đoán tốt. Nguyên nhân cốt lõi là gì?",
+    "options": {
+      "A": "Chưa gọi `loss.backward()` trong vòng lặp validation.",
+      "B": "Hai lỗi kết hợp: (1) Broadcasting ngầm định giữa `(batch_size, 1)` và `(batch_size,)` tạo ra ma trận `(batch_size, batch_size)` làm sai công thức MSE; (2) Cộng trực tiếp tensor `val_loss += loss` mà không có `torch.no_grad()` hoặc `.item()` khiến toàn bộ đồ thị tính toán (computational graph) bị giữ lại trong VRAM.",
+      "C": "Hàm `.to('cuda')` không thể dùng cho nhãn `y`.",
+      "D": "`model.eval()` làm tăng gấp đôi bộ nhớ GPU."
+    },
+    "correct_answer": "B",
+    "explanation": "Trong PyTorch/NumPy, trừ hai tensor có kích thước `(N, 1)` và `(N,)` sẽ kích hoạt cơ chế broadcasting thành `(N, N)` thay vì trừ từng phần tử tương ứng (cần `.squeeze()` hoặc `.view(-1)`). Ngoài ra, cộng dồn `val_loss += loss` (với `loss` là tensor có `requires_grad=True`) sẽ nối toàn bộ đồ thị tính toán qua tất cả các batch, gây tràn VRAM."
+  },
+  {
+    "id": 4,
+    "tag": "Both - Linear Regression & L1/L2 Regularization",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "Linear Regression & L1/L2 Regularization",
+    "category": "Both",
+    "prompt": "Bạn có bài toán dự đoán giá hoạt chất sinh học từ 5.000 đặc trưng gen, nhưng chỉ thu thập được 300 mẫu bệnh nhân. Trong 5.000 đặc trưng có rất nhiều đặc trưng dư thừa (không liên quan đến nhãn) và có hiện tượng đa cộng tuyến (multicollinearity) cao. Bạn muốn mô hình vừa chống Overfitting, vừa tự động **loại bỏ (đưa trọng số về đúng bằng 0)** các đặc trưng không quan trọng để giải thích y khoa. Bạn nên chọn phương pháp nào?",
+    "options": {
+      "A": "Hồi quy tuyến tính thông thường (Ordinary Least Squares) không có điều chuẩn.",
+      "B": "Hồi quy tuyến tính kết hợp L2 Regularization (Ridge Regression) vì L2 tạo ra nghiệm thưa (sparse solution).",
+      "C": "Hồi quy tuyến tính kết hợp L1 Regularization (Lasso) hoặc kết hợp L1 + L2 (ElasticNet), vì đạo hàm của chuẩn L1 giúp đẩy các trọng số nhỏ về đúng bằng 0.",
+      "D": "Tăng bậc đa thức (Polynomial Features) lên bậc 3 trước khi chạy Linear Regression."
+    },
+    "correct_answer": "C",
+    "explanation": "Khi số chiều $p \\gg N$ (5.000 đặc trưng, 300 mẫu), OLS sẽ overfit nghiêm trọng. L2 (Ridge) chỉ thu nhỏ trọng số tiệm cận 0 chứ không triệt tiêu hẳn. L1 (Lasso) có hình học vùng ràng buộc dạng hình thoi (tạo góc nhọn trên các trục tọa độ), giúp triệt tiêu trọng số về đúng 0 (Feature Selection)."
+  },
+  {
+    "id": 5,
+    "tag": "Both - Logistic Regression",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "Logistic Regression & Underfitting Diagnosis",
+    "category": "Both",
+    "prompt": "Một sinh viên sử dụng Logistic Regression (với các đặc trưng gốc $x_1, x_2$) để phân loại hai nhóm dữ liệu 2D. Khi trực quan hóa bằng `Matplotlib`, dữ liệu lớp 0 nằm gọn trong một hình tròn tâm $(0,0)$ bán kính $R=1$, còn dữ liệu lớp 1 tạo thành một vòng tròn đồng tâm bao quanh lớp 0 (bán kính từ $2$ đến $3$). Sau khi huấn luyện, độ chính xác trên cả tập Train và Test đều chỉ đạt khoảng 52%. Chẩn đoán nào sau đây là chính xác nhất?",
+    "options": {
+      "A": "Mô hình đang bị Overfitting nghiêm trọng, cần tăng hệ số điều chuẩn $C$ hoặc giảm số vòng lặp.",
+      "B": "Mô hình đang bị Underfitting (High Bias) vì ranh giới quyết định của Logistic Regression thuần túy là siêu phẳng tuyến tính ($\\mathbf{w}^T\\mathbf{x} + b = 0$), không thể tách rời dữ liệu phân bố dạng vòng tròn đồng tâm nếu không thêm đặc trưng phi tuyến (như $x_1^2 + x_2^2$) hoặc đổi sang mô hình phi tuyến.",
+      "C": "Hàm mất mát Binary Cross-Entropy không hội tụ được trên dữ liệu 2 chiều.",
+      "D": "Cần chuẩn hóa `MinMaxScaler` để biến ranh giới tuyến tính thành hình tròn."
+    },
+    "correct_answer": "B",
+    "explanation": "Logistic Regression là bộ phân loại tuyến tính. Khi cả Train và Test accuracy đều thấp trên dữ liệu có ranh giới phi tuyến rõ rệt (vòng tròn đồng tâm), đó là dấu hiệu điển hình của Underfitting do giới hạn biểu diễn của mô hình."
+  },
+  {
+    "id": 6,
+    "tag": "Both - K-Nearest Neighbors (K-NN)",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "K-Nearest Neighbors (K-NN) & Feature Scaling",
+    "category": "Both",
+    "prompt": "Khi nào thuật toán K-Nearest Neighbors (K-NN) sẽ hoạt động **kém hiệu quả nhất** và xuất hiện dấu hiệu suy giảm độ chính xác nghiêm trọng?",
+    "options": {
+      "A": "Khi tập dữ liệu có số lượng mẫu nhỏ (khoảng 1.000 mẫu), số chiều thấp (4 đặc trưng đã chuẩn hóa) và ranh giới phân lớp phi tuyến mượt.",
+      "B": "Khi dữ liệu có số chiều rất lớn (ví dụ: 2.000 đặc trưng, gây ra \"Lời nguyền số chiều\" - Curse of Dimensionality làm khoảng cách Euclid giữa các điểm trở nên xấp xỉ nhau) và các đặc trưng có đơn vị đo chênh lệch lớn (ví dụ: lương tính bằng triệu đồng và tuổi tính bằng năm) nhưng chưa được chuẩn hóa.",
+      "C": "Khi bài toán có nhiều hơn 2 lớp cần phân loại.",
+      "D": "Khi không có giai đoạn huấn luyện bằng Gradient Descent."
+    },
+    "correct_answer": "B",
+    "explanation": "K-NN dựa hoàn toàn vào khoảng cách hình học. Nó có 2 nhược điểm chí mạng: (1) Rất nhạy cảm với thang đo (đặc trưng có biên độ lớn sẽ lấn át hoàn toàn khoảng cách), và (2) Trong không gian nhiều chiều (Curse of Dimensionality), tỷ số khoảng cách giữa điểm xa nhất và gần nhất tiến về 1, làm mất ý nghĩa của láng giềng gần nhất."
+  },
+  {
+    "id": 7,
+    "tag": "Both - Decision Trees",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "Decision Trees & Extrapolation Limit",
+    "category": "Both",
+    "prompt": "Bạn huấn luyện một mô hình Cây quyết định (`DecisionTreeClassifier(max_depth=None)`) để dự đoán giá cổ phiếu hoặc nhiệt độ ngoài trời theo thời gian (có xu hướng tăng tuyến tính vượt ra ngoài miền giá trị của tập huấn luyện). Nhận xét nào sau đây nêu đúng **nhược điểm cố hữu** của Decision Tree trong tình huống này?",
+    "options": {
+      "A": "Cây quyết định không thể xử lý dữ liệu có cả biến liên tục và biến phân loại.",
+      "B": "Cây quyết định không bị Overfitting khi `max_depth=None`.",
+      "C": "Cây quyết định chia không gian bằng các nhát cắt song song với trục tọa độ (axis-aligned splits) và dự đoán bằng hằng số cục bộ trên từng nút lá, nên **hoàn toàn không có khả năng ngoại suy (extrapolation)** cho các giá trị nằm ngoài khoảng `[min, max]` của tập huấn luyện.",
+      "D": "Cây quyết định bắt buộc phải chuẩn hóa `StandardScaler` mới hội tụ được."
+    },
+    "correct_answer": "C",
+    "explanation": "Decision Tree (và cả Random Forest/Gradient Boosting trên cây) tạo ra hàm bậc thang hằng số từng khúc. Với mọi điểm dữ liệu mới lớn hơn giá trị cực đại từng thấy trong tập Train, cây chỉ có thể trả về giá trị trung bình của nút lá ngoài cùng mà không thể ngoại suy theo xu hướng tuyến tính. Ngoài ra, để `max_depth=None` dễ dẫn đến Overfitting nặng."
+  },
+  {
+    "id": 8,
+    "tag": "Practice - Model Ensembles: Bagging, Random Forest, Gradient Boosting",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "Model Ensembles (Random Forest vs Gradient Boosting)",
+    "category": "Practice",
+    "prompt": "Bạn có một tập dữ liệu dạng bảng (tabular data) chứa khoảng 15% nhãn bị gán sai ngẫu nhiên (noisy labels) và nhiều điểm ngoại lai (outliers). Bạn thử nghiệm hai phương pháp Ensemble:\n1. **Random Forest** (Bagging các cây độc lập).\n2. **Gradient Boosting** với số lượng cây lớn (`n_estimators=2000`, `learning_rate=0.3`) không dừng sớm.\n\nKết quả thực nghiệm nào có khả năng xảy ra cao nhất và tại sao?",
+    "options": {
+      "A": "Gradient Boosting sẽ bền vững với nhiễu hơn Random Forest vì các cây sau tự động xóa bỏ các điểm nhiễu.",
+      "B": "Random Forest giảm phương sai (variance) nhờ lấy trung bình các cây độc lập nên bền vững hơn trước nhãn nhiễu; ngược lại, Gradient Boosting huấn luyện tuần tự tập trung vào các mẫu có sai số (residual/gradient) lớn nên sẽ cố gắng khớp (overfit) vào chính các điểm nhiễu/ngoại lai.",
+      "C": "Cả hai phương pháp đều chỉ làm giảm độ chệch (bias) chứ không làm giảm phương sai.",
+      "D": "Random Forest không thể chạy song song trên nhiều nhân CPU, còn Gradient Boosting có thể huấn luyện song song các cây cùng lúc."
+    },
+    "correct_answer": "B",
+    "explanation": "Bagging / Random Forest xây dựng các cây độc lập trên các tập mẫu bootstrap giúp giảm Variance và ít bị ảnh hưởng bởi nhiễu. Ngược lại, Boosting tập trung trọng số/gradient vào những mẫu dự đoán sai ở bước trước; nếu dữ liệu có nhãn nhiễu hoặc outlier, Boosting sẽ liên tục dồn lực học thuộc các điểm nhiễu đó, gây Overfitting."
+  },
+  {
+    "id": 9,
+    "tag": "Both - Support Vector Machines (SVM)",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "Support Vector Machines (SVM) & Scalability",
+    "category": "Both",
+    "prompt": "Bạn cần giải bài toán phân loại văn bản/giao dịch gồm **2.000.000 mẫu (2 triệu dòng)** và 50 đặc trưng. Một đồng nghiệp đề xuất sử dụng `SVC(kernel='rbf', C=10.0)` của `scikit-learn`. Tại sao đề xuất này **không phù hợp** và dấu hiệu nào sẽ xuất hiện khi chạy code?",
+    "options": {
+      "A": "RBF Kernel chỉ hoạt động được với dữ liệu 1 chiều.",
+      "B": "Độ phức tạp tính toán và bộ nhớ của SVM với Kernel phi tuyến (như RBF) tăng theo bậc hai đến bậc ba của số lượng mẫu ($O(N^2)$ đến $O(N^3)$ để tính ma trận Kernel $N \\times N$), khiến quá trình huấn luyện bị treo hoặc tràn RAM khi $N = 2.000.000$.",
+      "C": "Tham số $C=10.0$ là biên mềm tuyệt đối (vô hiệu hóa hoàn toàn hàm phạt sai số).",
+      "D": "SVM không tìm siêu phẳng có lề cực đại (maximum margin)."
+    },
+    "correct_answer": "B",
+    "explanation": "Kernel SVM yêu cầu tính và lưu trữ ma trận Gram (Kernel matrix) liên quan đến các cặp điểm dữ liệu, có độ phức tạp thời gian khoảng $O(N^2 \\text{ đến } N^3)$. Khi số mẫu $N$ lên tới hàng triệu, Kernel SVM trở nên bất khả thi; lúc này nên dùng Linear SVM (`LinearSVC`), SGD, hoặc Gradient Boosting / Deep Learning."
+  },
+  {
+    "id": 10,
+    "tag": "Both - K-Means Clustering",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "K-Means Clustering & Non-convex Failure",
+    "category": "Both",
+    "prompt": "Bạn áp dụng thuật toán K-Means (`n_clusters=2`) lên tập dữ liệu 2D gồm hai cụm có hình dạng như hai vành trăng khuyết lồng vào nhau (two interleaving half-moons - giống dữ liệu `make_moons`). Mặc dù bạn đã thử chạy lại hàng trăm lần với khởi tạo `k-means++`, thuật toán vẫn luôn cắt đôi hai vầng trăng thay vì tách đúng từng vầng trăng. Nguyên nhân lý thuyết là gì?",
+    "options": {
+      "A": "Số lần lặp tối đa (`max_iter`) chưa đủ lớn.",
+      "B": "K-Means tối ưu hóa tổng bình phương khoảng cách Euclid tới tâm cụm (inertia), ngầm giả định các cụm có dạng hình cầu lồi (convex / spherical) và kích thước tương đương; do đó ranh giới phân chia của K-Means là biểu đồ Voronoi tuyến tính, không thể tách các cụm phi lồi (non-convex).",
+      "C": "K-Means chỉ hoạt động được khi số cụm $K \\ge 3$.",
+      "D": "Khởi tạo `k-means++` làm thuật toán bị kẹt ở cực tiểu địa phương tồi tệ hơn khởi tạo ngẫu nhiên."
+    },
+    "correct_answer": "B",
+    "explanation": "K-Means gán mỗi điểm vào tâm cụm gần nhất theo khoảng cách Euclid. Điều này tạo ra các vùng Voronoi lồi (convex). Với dữ liệu có cấu trúc hình học phức tạp hoặc phi lồi (như hai vành trăng khuyết hoặc vòng tròn đồng tâm), K-Means hoàn toàn thất bại."
+  },
+  {
+    "id": 11,
+    "tag": "Practice - DBSCAN, Hierarchical & Spectral Clustering",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "DBSCAN, Hierarchical & Spectral Clustering",
+    "category": "Practice",
+    "prompt": "Để khắc phục thất bại của K-Means ở **Câu 10** (dữ liệu gồm các cụm hình dạng bất kỳ, phi lồi và có thêm khoảng 5% điểm nhiễu nằm rải rác xa các cụm), bạn nên chuyển sang thuật toán phân cụm nào dưới đây và cần lưu ý hạn chế gì của nó?",
+    "options": {
+      "A": "Dùng **DBSCAN** vì nó phân cụm dựa trên mật độ (density-based), tìm được cụm hình dạng bất kỳ và tự động đánh dấu điểm nhiễu (`label = -1`), nhưng nó sẽ gặp khó khăn nếu các cụm có mật độ điểm chênh lệch nhau quá lớn.",
+      "B": "Dùng **Agglomerative Clustering** với liên kết `ward`, vì `ward` chuyên trị các cụm phi lồi và tự lọc nhiễu.",
+      "C": "Dùng **PCA** vì PCA là thuật toán phân cụm dựa trên mật độ.",
+      "D": "Dùng **K-Means** với khoảng cách Manhattan là đủ tách hai vành trăng."
+    },
+    "correct_answer": "A",
+    "explanation": "DBSCAN (và Spectral Clustering) xử lý rất tốt các cụm hình dạng bất kỳ (non-convex). Đặc biệt DBSCAN không cần biết trước số cụm $K$ và có khả năng phát hiện ngoại lai/nhiễu. Tuy nhiên, nhược điểm lớn của DBSCAN là dùng chung một cặp tham số $(\\text{eps}, \\text{min\\_samples})$ toàn cục nên hoạt động kém khi các cụm có mật độ khác nhau nhiều."
+  },
+  {
+    "id": 12,
+    "tag": "Both/Practice - PCA vs t-SNE & UMAP",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "PCA vs t-SNE & UMAP",
+    "category": "Both/Practice",
+    "prompt": "Một sinh viên muốn giảm chiều tập dữ liệu từ 100 chiều xuống 2 chiều để làm đặc trưng đầu vào cho bộ phân loại SVM (có tập Train được thu thập hôm nay và tập Test sẽ thu thập vào tháng sau). Sinh viên này viết:\n```python\ntsne = TSNE(n_components=2)\nX_train_2d = tsne.fit_transform(X_train)\nX_test_2d = tsne.transform(X_test)\n```\nTại sao đoạn mã này vừa báo lỗi thực thi vừa sai về mặt ứng dụng thuật toán?",
+    "options": {
+      "A": "`TSNE` chỉ giảm xuống được 3 chiều, không giảm xuống được 2 chiều.",
+      "B": "`t-SNE` là thuật toán giảm chiều phi tuyến chủ yếu dùng để **trực quan hóa (visualization)** bảo toàn cấu trúc lân cận cục bộ; nó không học một ma trận chiếu tuyến tính tường minh nên trong `scikit-learn` không có hàm `.transform(X_test)` cho dữ liệu mới, đồng thời làm biến dạng khoảng cách toàn cục. Trong bài toán pipeline dự đoán hoặc cần chiếu tập Test độc lập, nên dùng **PCA** (hoặc UMAP/Autoencoder có hỗ trợ `transform`).",
+      "C": "`PCA` là thuật toán phi tuyến còn `t-SNE` là thuật toán tuyến tính dựa trên trị riêng.",
+      "D": "`t-SNE` giữ nguyên 100% phương sai toàn cục của dữ liệu gốc."
+    },
+    "correct_answer": "B",
+    "explanation": "t-SNE tối ưu trực tiếp tọa độ của các điểm hiện có bằng KL-divergence trên phân phối xác suất lân cận, không tạo ra hàm ánh xạ tham số cho điểm dữ liệu mới (do đó `TSNE` trong `sklearn` không có phương thức `.transform()`). PCA tìm các trục trực giao cực đại hóa phương sai, cho phép chiếu tập Test nhất quán thông qua `pca.transform(X_test)`."
+  },
+  {
+    "id": 13,
+    "tag": "Both - Evaluation Metrics, Confusion Matrix & ROC Curves",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "Evaluation Metrics, Confusion Matrix & ROC/PR Curves",
+    "category": "Both",
+    "prompt": "Bạn xây dựng hệ thống phát hiện giao dịch thẻ tín dụng gian lận, trong đó tỷ lệ gian lận thực tế chỉ chiếm **0.1%** (1.000 giao dịch mới có 1 giao dịch gian lận). Mô hình A đạt `Accuracy = 99.9%` và `ROC-AUC = 0.92`, nhưng khi đưa vào vận hành, ngân hàng phát hiện mô hình bỏ lọt gần như toàn bộ các vụ gian lận. Bạn nên sử dụng độ đo và công cụ nào để đánh giá trung thực hiệu năng mô hình trong trường hợp này?",
+    "options": {
+      "A": "Chỉ cần nhìn vào `Accuracy` là đủ vì 99.9% chứng tỏ mô hình đã tiệm cận hoàn hảo.",
+      "B": "Sử dụng `Mean Squared Error (MSE)` trên nhãn phân loại.",
+      "C": "Kiểm tra **Confusion Matrix**, theo dõi **Precision, Recall, F1-Score (hoặc F-$\\beta$ ưu tiên Recall)** của lớp thiểu số (gian lận) và sử dụng đường cong **Precision-Recall (PR-AUC)** thay vì chỉ tin vào Accuracy hay ROC-AUC (vì số lượng True Negative quá lớn làm False Positive Rate trong ROC bị kéo xuống rất nhỏ, gây ảo giác mô hình tốt).",
+      "D": "Đổi nhãn lớp gian lận thành 0 để tăng Accuracy lên 100%."
+    },
+    "correct_answer": "C",
+    "explanation": "Với dữ liệu mất cân bằng nghiêm trọng (0.1% positive), một mô hình dự đoán tất cả là 0 sẽ đạt 99.9% Accuracy. Ngay cả ROC-AUC cũng có thể cao giả tạo vì $\\text{FPR} = \\frac{\\text{FP}}{\\text{FP} + \\text{TN}}$ có mẫu số $\\text{TN}$ cực lớn. Do đó cần dùng Confusion Matrix, Recall (tránh bỏ lọt gian lận), Precision, F1-Score và PR Curve."
+  },
+  {
+    "id": 14,
+    "tag": "Theory & Practice - Cross-Validation & Data Splitting",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "Train/Val/Test Splitting & Group Cross-Validation",
+    "category": "Practice",
+    "prompt": "Bạn đang phát triển mô hình chẩn đoán bệnh phổi từ ảnh X-quang. Tập dữ liệu có 10.000 ảnh chụp từ 1.000 bệnh nhân (mỗi bệnh nhân chụp 10 ảnh ở các góc độ/ngày liền kề nhau). Bạn dùng `train_test_split` ngẫu nhiên trên 10.000 ảnh (80% train, 20% test) và thấy độ chính xác trên tập Test đạt 98%. Tuy nhiên, khi đem thử nghiệm tại một bệnh viện mới với bệnh nhân mới hoàn toàn, độ chính xác tụt xuống 65%. Nguyên nhân là gì?",
+    "options": {
+      "A": "Tập Test 20% là quá lớn làm mô hình thiếu dữ liệu học.",
+      "B": "Chia ngẫu nhiên theo từng ảnh làm các ảnh của **cùng một bệnh nhân** xuất hiện ở cả tập Train và tập Test; mô hình đã học thuộc đặc điểm giải phẫu riêng/background của từng bệnh nhân (Data Leakage). Phải chia dữ liệu theo nhóm bệnh nhân (`GroupKFold` hoặc `GroupShuffleSplit` theo `patient_id`).",
+      "C": "Do không sử dụng K-Means trước khi chia dữ liệu.",
+      "D": "Khi đánh giá ở bệnh viện mới, bắt buộc phải gộp dữ liệu bệnh viện mới vào tập Train rồi mới đo Accuracy."
+    },
+    "correct_answer": "B",
+    "explanation": "Khi nhiều mẫu dữ liệu có sự phụ thuộc (cùng một bệnh nhân, cùng một đoạn video, cùng một gia đình), việc chia ngẫu nhiên theo mẫu làm rò rỉ thông tin định danh cá nhân giữa Train và Test. Sử dụng `GroupKFold` đảm bảo toàn bộ ảnh của một bệnh nhân chỉ nằm ở Train hoặc chỉ nằm ở Validation/Test."
+  },
+  {
+    "id": 15,
+    "tag": "Practice - Feature Engineering & Data Processing",
+    "section": {
+      "part_number": 1,
+      "name": "PHẦN 1: KỸ NĂNG NỀN TẢNG & HỌC MÁY CỔ ĐIỂN",
+      "short_name": "Phần 1: Nền tảng & ML Cổ điển",
+      "en": "Foundational Skills & Classical ML"
+    },
+    "topic": "Feature Engineering (One-Hot vs Embeddings)",
+    "category": "Practice",
+    "prompt": "Bạn có cột dữ liệu `zip_code` (mã bưu chính) gồm 15.000 mã khác nhau trong một bảng dữ liệu 50.000 dòng, dùng để huấn luyện một mạng nơ-ron nhỏ hoặc hồi quy tuyến tính. Nếu bạn áp dụng trực tiếp **One-Hot Encoding** lên cột `zip_code` này, vấn đề gì sẽ xảy ra và giải pháp Feature Engineering nào phù hợp hơn?",
+    "options": {
+      "A": "One-Hot Encoding sẽ tạo ra thêm 15.000 cột thưa (sparse, chiều cao), gây tốn bộ nhớ, tăng nguy cơ Overfitting và không nắm bắt được sự tương đồng giữa các vùng địa lý gần nhau; giải pháp tốt hơn là dùng **Data Embeddings (Entity Embeddings)** hoặc gom nhóm/thống kê đặc trưng theo vùng.",
+      "B": "One-Hot Encoding chỉ tạo thêm đúng 1 cột duy nhất chứa các số từ 1 đến 15.000.",
+      "C": "One-Hot Encoding làm mất hoàn toàn các hàng dữ liệu có giá trị lớn hơn 100.",
+      "D": "Nên áp dụng `MaxPooling` trực tiếp lên chuỗi ký tự mã bưu chính."
+    },
+    "correct_answer": "A",
+    "explanation": "Với biến phân loại có số lượng giá trị duy nhất lớn (high-cardinality categorical feature), One-Hot Encoding làm bùng nổ số chiều và coi mọi mã bưu chính là trực giao (độc lập hoàn toàn). Sử dụng lớp Embedding (`nn.Embedding`) hoặc trích xuất đặc trưng thống kê (statistical features) giúp nén thông tin vào không gian vector chiều thấp giàu ngữ nghĩa."
+  },
+  {
+    "id": 16,
+    "tag": "Both - Perceptron Basics & Multi-Layer Perceptrons (MLP)",
+    "section": {
+      "part_number": 2,
+      "name": "PHẦN 2: MẠNG NƠ-RON & HỌC SÂU",
+      "short_name": "Phần 2: Mạng Nơ-ron & Học sâu",
+      "en": "Neural Networks & Deep Learning"
+    },
+    "topic": "Perceptron Basics & Multi-Layer Perceptrons (MLP)",
+    "category": "Both",
+    "prompt": "Một sinh viên thiết kế mạng MLP 5 tầng ẩn để giải bài toán phi tuyến phức tạp (như bài toán XOR mở rộng) bằng PyTorch như sau:\n```python\nmodel = nn.Sequential(\n    nn.Linear(10, 64),\n    nn.Linear(64, 128),\n    nn.Linear(128, 64),\n    nn.Linear(64, 1)\n)\n```\nDù huấn luyện rất lâu với dữ liệu sạch, mô hình này chỉ đạt hiệu năng ngang bằng với một mô hình Hồi quy tuyến tính đơn giản (`nn.Linear(10, 1)`). Tại sao?",
+    "options": {
+      "A": "Số lượng tầng ẩn (4 tầng `Linear`) là quá ít, cần tăng lên 50 tầng `Linear`.",
+      "B": "Thiếu các **hàm kích hoạt phi tuyến (Non-linear Activation Functions)** như ReLU, Tanh giữa các tầng `Linear`; tích của nhiều phép biến đổi tuyến tính liên tiếp $\\mathbf{W}_4(\\mathbf{W}_3(\\mathbf{W}_2(\\mathbf{W}_1\\mathbf{x})))$ về mặt toán học vẫn chỉ tương đương với một phép biến đổi tuyến tính duy nhất $\\mathbf{W}_{\\text{eff}}\\mathbf{x}$.",
+      "C": "Tầng đầu tiên bắt buộc phải có số nơ-ron nhỏ hơn số chiều đầu vào (10).",
+      "D": "`nn.Sequential` không hỗ trợ lan truyền ngược (Backpropagation)."
+    },
+    "correct_answer": "B",
+    "explanation": "Một mạng MLP nhiều tầng không có hàm kích hoạt phi tuyến sẽ sụp đổ (collapse) thành một phép biến đổi tuyến tính đơn tầng, mất hoàn toàn khả năng xấp xỉ hàm phi tuyến (như bài toán XOR)."
+  },
+  {
+    "id": 17,
+    "tag": "Both - Backpropagation & Activation Functions (ReLU, Sigmoid, Tanh)",
+    "section": {
+      "part_number": 2,
+      "name": "PHẦN 2: MẠNG NƠ-RON & HỌC SÂU",
+      "short_name": "Phần 2: Mạng Nơ-ron & Học sâu",
+      "en": "Neural Networks & Deep Learning"
+    },
+    "topic": "Backpropagation & Activations (Sigmoid, ReLU)",
+    "category": "Both",
+    "prompt": "Khi huấn luyện một mạng nơ-ron sâu gồm 30 tầng sử dụng hàm kích hoạt **Sigmoid** ở tất cả các tầng ẩn, bạn quan sát thấy trọng số ở các tầng đầu tiên (gần đầu vào) hầu như không thay đổi qua hàng trăm epoch, và loss không giảm. Tuy nhiên, khi bạn đổi toàn bộ sang **ReLU** với tốc độ học (learning rate) đặt quá cao (`lr = 1.0`), bạn lại thấy 90% nơ-ron trong mạng luôn xuất ra giá trị `0` với mọi đầu vào. Hai hiện tượng này lần lượt là gì?",
+    "options": {
+      "A": "(1) Exploding Gradient do đạo hàm Sigmoid lớn hơn 1; (2) Overfitting do ReLU.",
+      "B": "(1) **Vanishing Gradient** (Triệt tiêu đạo hàm) vì đạo hàm cực đại của Sigmoid chỉ là $0.25$, nhân chuỗi qua 30 tầng theo quy tắc dây chuyền (chain rule) sẽ tiến về $0$; (2) **Dying ReLU** (ReLU chết) vì bước nhảy trọng số quá lớn đẩy tổng trọng số vào miền âm sâu, nơi đạo hàm của ReLU bằng $0$ mãi mãi.",
+      "C": "(1) Underfitting do thiếu dữ liệu; (2) Vanishing Gradient do ReLU có đạo hàm bằng $0.25$.",
+      "D": "Cả hai đều là hiện tượng tràn số dấu phẩy động (Floating-point Overflow)."
+    },
+    "correct_answer": "B",
+    "explanation": "Đạo hàm của $\\text{Sigmoid}(z)$ là $\\sigma(z)(1-\\sigma(z)) \\le 0.25$. Khi nhân liên tiếp qua $L$ tầng trong Backpropagation, gradient ở các tầng đầu giảm theo hàm mũ $0.25^L \\to 0$ (Vanishing Gradient). Với ReLU ($f(z)=\\max(0,z)$), nếu learning rate quá lớn đẩy đầu ra của tầng vào vùng $z < 0$ với mọi mẫu, gradient tại đó bằng $0$ khiến nơ-ron không bao giờ cập nhật được nữa (Dying ReLU)."
+  },
+  {
+    "id": 18,
+    "tag": "Both - Loss Functions (MSE, MAE, Cross Entropy)",
+    "section": {
+      "part_number": 2,
+      "name": "PHẦN 2: MẠNG NƠ-RON & HỌC SÂU",
+      "short_name": "Phần 2: Mạng Nơ-ron & Học sâu",
+      "en": "Neural Networks & Deep Learning"
+    },
+    "topic": "Loss Functions (MSE, MAE, Cross Entropy)",
+    "category": "Both",
+    "prompt": "Xem xét 2 tình huống thực tế sau:\n- **Tình huống 1:** Bài toán hồi quy dự đoán thu nhập, trong tập dữ liệu có 1% tỷ phú có thu nhập gấp 10.000 lần mức trung bình (nhưng đây là nhiễu nhập liệu hoặc điểm ngoại lai bạn không muốn mô hình bị kéo lệch theo).\n- **Tình huống 2:** Trong PyTorch, bài toán phân loại đa lớp (10 lớp), sinh viên đặt tầng cuối của mô hình là `nn.Softmax(dim=1)` rồi đưa đầu ra đó vào hàm `nn.CrossEntropyLoss()`.\n\nNhận định nào sau đây là đúng cho cả 2 tình huống?",
+    "options": {
+      "A": "Tình huống 1 nên dùng **MSE** vì bình phương sai số giúp bỏ qua ngoại lai; Tình huống 2 là cách viết chuẩn trong PyTorch.",
+      "B": "Tình huống 1 nên dùng **MAE (L1 Loss) hoặc Huber Loss** thay vì MSE vì MSE bình phương sai số khiến các điểm ngoại lai thống trị hoàn toàn gradient; Tình huống 2 bị **lỗi tính lặp Softmax** vì `nn.CrossEntropyLoss()` trong PyTorch đã tích hợp sẵn `LogSoftmax + NLLLoss` (đầu vào phải là raw logits).",
+      "C": "Tình huống 1 nên dùng `CrossEntropyLoss`; Tình huống 2 nên đổi `nn.CrossEntropyLoss()` thành `nn.MSELoss()`.",
+      "D": "Cả MSE và MAE đều có đạo hàm không đổi đối với độ lớn của sai số."
+    },
+    "correct_answer": "B",
+    "explanation": "MSE có đạo hàm tỉ lệ bậc nhất với sai số $|y - \\hat{y}|$, nên một điểm outlier cực lớn sẽ tạo gradient khổng lồ kéo lệch mô hình; MAE có đạo hàm hằng số $\\pm 1$ nên bền vững trước outlier. Trong PyTorch, `nn.CrossEntropyLoss` yêu cầu đầu vào là *unnormalized logits*; nếu áp dụng `Softmax` trước đó sẽ làm sai lệch công thức toán học và gây bão hòa gradient."
+  },
+  {
+    "id": 19,
+    "tag": "Both - Data Embeddings & Pooling Techniques (Max, Average)",
+    "section": {
+      "part_number": 2,
+      "name": "PHẦN 2: MẠNG NƠ-RON & HỌC SÂU",
+      "short_name": "Phần 2: Mạng Nơ-ron & Học sâu",
+      "en": "Neural Networks & Deep Learning"
+    },
+    "topic": "Data Embeddings & Pooling (Max, Average)",
+    "category": "Both",
+    "prompt": "Khi thiết kế mạng xử lý chuỗi đặc trưng hoặc ảnh, bạn cần gộp (pooling) một tập các vector đặc trưng dọc theo chiều không gian/thời gian để tạo ra một vector biểu diễn duy nhất. Sự khác biệt cốt lõi khi lựa chọn giữa **Max Pooling** và **Average Pooling** là gì?",
+    "options": {
+      "A": "Max Pooling giữ lại tín hiệu kích hoạt mạnh nhất (đặc trưng nổi bật nhất như cạnh sắc nét, từ khóa quan trọng xuất hiện ở một vị trí), trong khi Average Pooling tính trung bình toàn bộ vùng nên phản ánh mức độ hiện diện tổng thể nhưng có thể làm mờ (smooth out) các tín hiệu cục bộ nhỏ mà mạnh.",
+      "B": "Max Pooling có số lượng tham số huấn luyện (learnable parameters) gấp đôi Average Pooling.",
+      "C": "Average Pooling chỉ dùng được cho văn bản, còn Max Pooling chỉ dùng được cho âm thanh.",
+      "D": "Cả hai phương pháp đều làm tăng gấp đôi kích thước chiều không gian của tensor."
+    },
+    "correct_answer": "A",
+    "explanation": "Cả Max Pooling và Average Pooling đều không có tham số huấn luyện. Max Pooling chọn giá trị cực đại, rất hiệu quả khi cần phát hiện sự xuất hiện của một đặc trưng nổi bật (như vết nứt nhỏ trên ảnh hoặc từ khóa mang sắc thái mạnh), còn Average Pooling tổng hợp thông tin nền toàn cục."
+  },
+  {
+    "id": 20,
+    "tag": "Both/Practice - SGD, Mini-Batch GD & Momentum Methods (Adam, AdamW)",
+    "section": {
+      "part_number": 2,
+      "name": "PHẦN 2: MẠNG NƠ-RON & HỌC SÂU",
+      "short_name": "Phần 2: Mạng Nơ-ron & Học sâu",
+      "en": "Neural Networks & Deep Learning"
+    },
+    "topic": "SGD, Mini-Batch GD & Momentum (Adam, AdamW)",
+    "category": "Both/Practice",
+    "prompt": "Khi huấn luyện các mô hình học sâu hiện đại (như Transformer hoặc CNN lớn) có sử dụng kỹ thuật điều chuẩn trọng số (**Weight Decay**), tại sao bộ tối ưu **AdamW** thường được ưu tiên hơn so với việc dùng **Adam** kết hợp cộng thêm thành phần phạt L2 ($\\frac{\\lambda}{2}||\\mathbf{w}||^2$) vào hàm Loss?",
+    "options": {
+      "A": "Vì AdamW không sử dụng Momentum nên tốn ít bộ nhớ hơn Adam.",
+      "B": "Trong Adam chuẩn, nếu cộng L2 regularization vào Loss, đạo hàm của L2 ($\\nabla L_2 = \\lambda \\mathbf{w}$) cũng bị chia cho căn bậc hai của trung bình bình phương gradient thích nghi ($\\sqrt{v_t}$), làm các trọng số có gradient lớn bị điều chuẩn yếu đi; **AdamW tách rời (decouple)** bước Weight Decay ra khỏi bước cập nhật gradient thích nghi, giúp điều chuẩn đồng đều và tổng quát hóa tốt hơn.",
+      "C": "Adam chỉ chạy được với Batch Size bằng 1 (Stochastic Gradient Descent), còn AdamW chạy được với Mini-Batch.",
+      "D": "AdamW tự động tăng Learning Rate lên vô hạn sau mỗi epoch."
+    },
+    "correct_answer": "B",
+    "explanation": "L2 regularization và Weight Decay chỉ tương đương nhau đối với SGD thuần túy. Trong các bộ tối ưu thích nghi như Adam, việc trộn gradient của L2 vào moment bậc nhất và bậc hai làm méo hiệu ứng suy giảm trọng số. AdamW thực hiện cập nhật suy giảm trọng số trực tiếp ($\\mathbf{w}_{t+1} = (1 - \\eta \\lambda)\\mathbf{w}_t - \\eta \\text{AdamStep}$), mang lại khả năng hội tụ và chống overfit vượt trội."
+  },
+  {
+    "id": 21,
+    "tag": "Practice - Convergence, Learning Rates & Loss Curve Diagnosis",
+    "section": {
+      "part_number": 2,
+      "name": "PHẦN 2: MẠNG NƠ-RON & HỌC SÂU",
+      "short_name": "Phần 2: Mạng Nơ-ron & Học sâu",
+      "en": "Neural Networks & Deep Learning"
+    },
+    "topic": "Convergence, Learning Rates & Loss Curve Diagnosis",
+    "category": "Practice",
+    "prompt": "Bạn vẽ biểu đồ hàm mất mát trên tập huấn luyện (`Train Loss`) theo từng bước cập nhật (iteration) cho 3 lần thử nghiệm với 3 giá trị Learning Rate khác nhau (Đường A, Đường B, Đường C):\n- **Đường A:** Loss giảm cực kỳ chậm, gần như đi ngang tuyến tính với độ dốc rất nhỏ sau 100 epoch.\n- **Đường B:** Loss dao động dữ dội rồi tăng vọt lên `NaN` chỉ sau 15 iteration.\n- **Đường C:** Loss giảm rất nhanh ở 5 epoch đầu, sau đó đi ngang hoàn toàn ở một mức giá trị còn khá cao (chưa đạt yêu cầu).\n\nChẩn đoán và hướng xử lý nào sau đây là hợp lý nhất?",
+    "options": {
+      "A": "Đường A có Learning Rate quá cao; Đường B có Learning Rate quá thấp.",
+      "B": "Đường A có Learning Rate quá thấp; Đường B có Learning Rate quá cao gây phân kỳ (divergence / exploding loss); Đường C là dấu hiệu của Learning Rate ban đầu hơi cao khiến mô hình nhảy nhanh vào vùng thung lũng nhưng sau đó bị bật qua lại quanh điểm cực tiểu mà không hội tụ sâu được — cần áp dụng **Learning Rate Scheduler** (giảm dần LR theo thời gian như Cosine Annealing hoặc StepLR).",
+      "C": "Đường B chứng tỏ mô hình đã đạt độ chính xác 100%.",
+      "D": "Đường C chứng tỏ dữ liệu Test bị rò rỉ."
+    },
+    "correct_answer": "B",
+    "explanation": "Đây là bài toán đọc biểu đồ Loss kinh điển: LR quá nhỏ làm tốc độ hội tụ rất chậm (Đường A); LR quá lớn vượt ngưỡng ổn định làm bước nhảy văng khỏi bề mặt lồi cục bộ dẫn đến `NaN` (Đường B); LR vừa phải lúc đầu nhưng giữ cố định không giảm khiến mô hình dao động quanh đáy (Đường C), giải quyết bằng Learning Rate Decay/Scheduler."
+  },
+  {
+    "id": 22,
+    "tag": "Practice - Regularization: Dropout, Early Stopping, Weight Decay",
+    "section": {
+      "part_number": 2,
+      "name": "PHẦN 2: MẠNG NƠ-RON & HỌC SÂU",
+      "short_name": "Phần 2: Mạng Nơ-ron & Học sâu",
+      "en": "Neural Networks & Deep Learning"
+    },
+    "topic": "Regularization: Dropout, Early Stopping & Eval Mode",
+    "category": "Practice",
+    "prompt": "Một sinh viên huấn luyện mạng nơ-ron có sử dụng các tầng `nn.Dropout(p=0.5)` và `nn.BatchNorm2d()`. Trong quá trình huấn luyện, sinh viên áp dụng **Early Stopping** để lưu lại trọng số tại epoch có `Validation Loss` thấp nhất. Tuy nhiên, khi viết hàm dự đoán cho người dùng cuối (mỗi lần người dùng gửi lên **1 bức ảnh duy nhất**, tức `batch_size = 1`), sinh viên **quên gọi `model.eval()`** (mô hình vẫn ở chế độ mặc định `model.train()`). Hậu quả gì sẽ xảy ra?",
+    "options": {
+      "A": "Không có hậu quả gì vì PyTorch tự động tắt Dropout khi không gọi `loss.backward()`.",
+      "B": "Mỗi lần gửi cùng một bức ảnh, mô hình trả về một kết quả dự đoán **khác nhau ngẫu nhiên** (do Dropout vẫn tiếp tục ngẫu nhiên tắt 50% nơ-ron), đồng thời `BatchNorm2d` tính trung bình/phương sai trên đúng 1 bức ảnh hiện tại thay vì dùng `running_mean`/`running_var` đã học, làm hỏng hoàn toàn chất lượng dự đoán.",
+      "C": "Chương trình báo lỗi cú pháp Python vì `Early Stopping` xóa mất hàm `forward()`.",
+      "D": "Trọng số của mô hình bị đặt lại về 0."
+    },
+    "correct_answer": "B",
+    "explanation": "Trong PyTorch, `torch.no_grad()` chỉ tắt việc theo dõi gradient, còn hành vi của `Dropout` và `BatchNorm` phụ thuộc hoàn toàn vào trạng thái `model.train()` hay `model.eval()`. Nếu quên `model.eval()`, Dropout vẫn hoạt động ngẫu nhiên và BatchNorm chuẩn hóa theo thống kê của mini-batch hiện tại (rất tai hại khi `batch_size = 1`)."
+  },
+  {
+    "id": 23,
+    "tag": "Practice - Weight Initialization & Batch Normalization",
+    "section": {
+      "part_number": 2,
+      "name": "PHẦN 2: MẠNG NƠ-RON & HỌC SÂU",
+      "short_name": "Phần 2: Mạng Nơ-ron & Học sâu",
+      "en": "Neural Networks & Deep Learning"
+    },
+    "topic": "Weight Initialization & Batch Normalization",
+    "category": "Practice",
+    "prompt": "Điều gì sẽ xảy ra nếu bạn khởi tạo **tất cả các trọng số (weights) trong mạng MLP nhiều tầng bằng 0** (hoặc bằng cùng một hằng số $c = 0.5$), và khi nào phương pháp **Batch Normalization** sẽ hoạt động kém hiệu quả?",
+    "options": {
+      "A": "Khởi tạo toàn bộ trọng số bằng 0 là phương pháp tối ưu nhất (Xavier/He Initialization thực chất là gán bằng 0); Batch Normalization luôn hoạt động tốt với mọi kích thước batch.",
+      "B": "Khởi tạo tất cả trọng số bằng nhau làm mất tính bất đối xứng (**Symmetry Breaking Failure**): mọi nơ-ron trong cùng một tầng ẩn sẽ tính ra cùng một đầu ra, nhận cùng một gradient trong Backpropagation và cập nhật giống hệt nhau mãi mãi (mạng 100 nơ-ron hoạt động không khác gì mạng 1 nơ-ron). Trong khi đó, **Batch Normalization** sẽ hoạt động kém khi `batch_size` quá nhỏ (ví dụ `batch_size = 1` hoặc `2`) vì ước lượng trung bình và phương sai trên batch quá nhiễu.",
+      "C": "Khởi tạo trọng số bằng 0 gây ra lỗi tràn bộ nhớ GPU ngay ở bước forward đầu tiên.",
+      "D": "Batch Normalization chỉ được phép đặt ở tầng đầu ra cuối cùng sau hàm Softmax."
+    },
+    "correct_answer": "B",
+    "explanation": "Để các nơ-ron trong cùng một tầng học được các đặc trưng khác nhau, trọng số bắt buộc phải được khởi tạo ngẫu nhiên (như He/Kaiming cho ReLU hoặc Xavier/Glorot cho Tanh/Sigmoid) nhằm phá vỡ tính đối xứng. Batch Normalization phụ thuộc vào thống kê của mini-batch; khi batch size quá nhỏ (do giới hạn VRAM), thống kê này không đại diện cho phân phối dữ liệu (lúc đó người ta thường chuyển sang LayerNorm hoặc GroupNorm)."
+  },
+  {
+    "id": 24,
+    "tag": "Practice - Autoencoders",
+    "section": {
+      "part_number": 2,
+      "name": "PHẦN 2: MẠNG NƠ-RON & HỌC SÂU",
+      "short_name": "Phần 2: Mạng Nơ-ron & Học sâu",
+      "en": "Neural Networks & Deep Learning"
+    },
+    "topic": "Autoencoders & Bottleneck Design",
+    "category": "Practice",
+    "prompt": "Bạn sử dụng một mô hình **Autoencoder** để phát hiện bất thường (Anomaly Detection) trên dữ liệu cảm biến nhà máy: huấn luyện Autoencoder chỉ trên dữ liệu bình thường để tái tạo đầu vào ($\\hat{\\mathbf{x}} \\approx \\mathbf{x}$), sau đó dùng sai số tái tạo $||\\mathbf{x} - \\hat{\\mathbf{x}}||^2$ để phát hiện mẫu bất thường (kỳ vọng mẫu bất thường sẽ có sai số tái tạo lớn). Tuy nhiên, khi kiểm thử, cả mẫu bình thường lẫn mẫu bất thường (thậm chí là nhiễu trắng ngẫu nhiên) đều có sai số tái tạo gần bằng $0$. Sai lầm trong thiết kế kiến trúc là gì?",
+    "options": {
+      "A": "Kích thước tầng cổ chai (bottleneck / latent space dimension) được đặt quá lớn (lớn hơn hoặc bằng số chiều đầu vào mà không có điều chuẩn thưa hay nhiễu Denoising), khiến Autoencoder học được **hàm đồng nhất (Identity Function)** $\\hat{\\mathbf{x}} = \\mathbf{x}$, chỉ đơn thuần sao chép đầu vào sang đầu ra mà không học cấu trúc đặc trưng của dữ liệu bình thường.",
+      "B": "Do sử dụng hàm mất mát MSE để đo sai số tái tạo.",
+      "C": "Do huấn luyện mô hình chỉ trên dữ liệu bình thường thay vì huấn luyện trên 100% dữ liệu bất thường.",
+      "D": "Autoencoder là mô hình phân loại có giám sát nên không thể tính được $||\\mathbf{x} - \\hat{\\mathbf{x}}||^2$."
+    },
+    "correct_answer": "A",
+    "explanation": "Mục đích của Autoencoder trong phát hiện bất thường là ép dữ liệu đi qua một cổ chai thông tin (undercomplete bottleneck, $d_{\\text{latent}} \\ll d_{\\text{input}}$) để chỉ giữ lại quy luật của dữ liệu bình thường. Nếu không gian ẩn quá rộng (overcomplete) mà không có ràng buộc (như Denoising hoặc Sparsity), mạng sẽ học phép copy đơn giản (Identity Mapping), tái tạo hoàn hảo cả nhiễu lẫn bất thường."
+  },
+  {
+    "id": 25,
+    "tag": "Both - Attention Mechanism",
+    "section": {
+      "part_number": 2,
+      "name": "PHẦN 2: MẠNG NƠ-RON & HỌC SÂU",
+      "short_name": "Phần 2: Mạng Nơ-ron & Học sâu",
+      "en": "Neural Networks & Deep Learning"
+    },
+    "topic": "Attention Mechanism (Scaled Dot-Product)",
+    "category": "Both",
+    "prompt": "Trong công thức **Scaled Dot-Product Attention** của kiến trúc Transformer:\n$$\\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V$$\nTại sao chúng ta phải chia tích vô hướng $QK^T$ cho $\\sqrt{d_k}$ (với $d_k$ là số chiều của vector khóa/truy vấn) trước khi đưa vào hàm `softmax`?",
+    "options": {
+      "A": "Để giảm số lượng tham số của ma trận $V$ đi $\\sqrt{d_k}$ lần.",
+      "B": "Khi số chiều $d_k$ lớn, tích vô hướng $q \\cdot k = \\sum_{i=1}^{d_k} q_i k_i$ có phương sai tăng tỉ lệ thuận với $d_k$, làm các giá trị trong $QK^T$ có độ lớn rất lớn; điều này đẩy hàm `softmax` vào vùng bão hòa (nơi một phần tử xấp xỉ 1 và các phần tử còn lại xấp xỉ 0), khiến **gradient qua softmax trở nên cực kỳ nhỏ (vanishing gradients)**. Chia cho $\\sqrt{d_k}$ giúp chuẩn hóa phương sai về lại 1.",
+      "C": "Vì hàm `softmax` trong PyTorch chỉ nhận đầu vào nằm trong đoạn $[-1, 1]$.",
+      "D": "Để biến ma trận $QK^T$ thành ma trận tam giác dưới."
+    },
+    "correct_answer": "B",
+    "explanation": "Giả sử các phần tử của $q$ và $k$ là các biến ngẫu nhiên độc lập có trung bình $0$, phương sai $1$, thì tích vô hướng của chúng có trung bình $0$ và phương sai $d_k$. Khi $d_k$ lớn (ví dụ $64$ hoặc $128$), biên độ của tích vô hướng lớn làm `softmax` trở nên quá nhọn (peaky), gây triệt tiêu đạo hàm trong quá trình huấn luyện."
+  },
+  {
+    "id": 26,
+    "tag": "Both - Transformers (Text and Image)",
+    "section": {
+      "part_number": 2,
+      "name": "PHẦN 2: MẠNG NƠ-RON & HỌC SÂU",
+      "short_name": "Phần 2: Mạng Nơ-ron & Học sâu",
+      "en": "Neural Networks & Deep Learning"
+    },
+    "topic": "Transformers (Text and Image / ViT)",
+    "category": "Both",
+    "prompt": "Bạn đang cân nhắc giữa hai lựa chọn kiến trúc:\n1. Huấn luyện từ đầu (from scratch) một mô hình **Vision Transformer (ViT)** trên một tập dữ liệu ảnh y tế nhỏ chỉ có **2.000 ảnh**.\n2. Đưa một cuốn sách dài **100.000 token** vào một mô hình **Transformer tiêu chuẩn** (Full Self-Attention) trong một lần xử lý.\n\nNhận xét nào sau đây nêu đúng **hạn chế lý thuyết và thực tiễn** của Transformer trong hai trường hợp này?",
+    "options": {
+      "A": "(1) ViT thiếu các thiên kiến quy nạp không gian (inductive biases như tính bất biến tịnh tiến và tính cục bộ của CNN) nên khi huấn luyện từ đầu trên tập dữ liệu nhỏ (2.000 ảnh) sẽ bị Overfitting nặng và kém hơn CNN; (2) Full Self-Attention tính ma trận tương quan giữa mọi cặp token nên có độ phức tạp tính toán và bộ nhớ là **$O(N^2)$** theo độ dài chuỗi $N$, gây tràn bộ nhớ khi $N = 100.000$.",
+      "B": "(1) ViT không cần chia ảnh thành các mảnh (patches) mà xử lý từng pixel độc lập bằng CNN; (2) Độ phức tạp của Self-Attention là $O(1)$ không phụ thuộc vào độ dài chuỗi $N$.",
+      "C": "Transformer hoàn toàn không cần Positional Encoding vì phép nhân ma trận $QK^T$ đã tự động lưu giữ thứ tự vị trí của các từ/patch.",
+      "D": "ViT chỉ hoạt động được trên CPU."
+    },
+    "correct_answer": "A",
+    "explanation": "Khác với CNN có sẵn cấu trúc nhân chập cục bộ và chia sẻ trọng số (translation equivariance & locality), ViT coi ảnh như một chuỗi các patch và phải tự học quan hệ không gian từ dữ liệu, do đó cần tập tiền huấn luyện lớn hoặc phải dùng mô hình Pre-trained. Ngoài ra, ma trận Attention kích thước $N \\times N$ tạo ra rào cản $O(N^2)$ với chuỗi dài."
+  },
+  {
+    "id": 27,
+    "tag": "Practice - Model Finetuning (Full vs Parameter-Efficient / LoRA)",
+    "section": {
+      "part_number": 2,
+      "name": "PHẦN 2: MẠNG NƠ-RON & HỌC SÂU",
+      "short_name": "Phần 2: Mạng Nơ-ron & Học sâu",
+      "en": "Neural Networks & Deep Learning"
+    },
+    "topic": "Model Finetuning (Full vs Parameter-Efficient)",
+    "category": "Practice",
+    "prompt": "Bạn cần tinh chỉnh (fine-tune) một mô hình ngôn ngữ hoặc thị giác tiền huấn luyện có **7 tỷ tham số (7B parameters)** cho một tác vụ chuyên biệt của công ty với tập dữ liệu chỉ gồm **1.500 mẫu**, trên một máy trạm chỉ có **1 GPU 16GB VRAM**. Nếu bạn thực hiện **Full Fine-tuning** (cập nhật toàn bộ 7 tỷ tham số), điều gì sẽ xảy ra và phương pháp thay thế nào phù hợp nhất?",
+    "options": {
+      "A": "Full Fine-tuning sẽ chạy rất nhẹ nhàng trên 16GB VRAM vì không cần lưu trạng thái của bộ tối ưu (optimizer states).",
+      "B": "Full Fine-tuning sẽ bị tràn bộ nhớ VRAM (do phải lưu gradient và moment của Adam cho toàn bộ 7B tham số) và dễ gây ra hiện tượng **quên thảm khốc (Catastrophic Forgetting) / Overfitting** trên tập 1.500 mẫu; giải pháp phù hợp là dùng **Parameter-Efficient Fine-Tuning (PEFT)** như **LoRA** (đóng băng trọng số gốc và chỉ huấn luyện các ma trận phân rã hạng thấp $\\Delta W = BA$).",
+      "C": "Nên xóa bỏ 90% số tầng của mô hình rồi khởi tạo lại trọng số ngẫu nhiên từ đầu.",
+      "D": "PEFT/LoRA làm tăng số lượng tham số cần huấn luyện lên gấp 10 lần so với Full Fine-tuning."
+    },
+    "correct_answer": "B",
+    "explanation": "Full Fine-tuning một mô hình lớn đòi hỏi bộ nhớ khổng lồ cho gradients và optimizer states, đồng thời dễ làm hỏng các biểu diễn tổng quát đã học khi tập dữ liệu đích nhỏ. Các phương pháp PEFT (như LoRA, Adapter) đóng băng mô hình gốc và chỉ huấn luyện $<1\\%$ lượng tham số, tiết kiệm VRAM và giữ được khả năng tổng quát hóa."
+  },
+  {
+    "id": 28,
+    "tag": "Both/Practice - Convolutional Layers & Image Classification",
+    "section": {
+      "part_number": 3,
+      "name": "PHẦN 3: THỊ GIÁC MÁY TÍNH",
+      "short_name": "Phần 3: Thị giác máy tính",
+      "en": "Computer Vision"
+    },
+    "topic": "Convolutional Layers & Image Classification",
+    "category": "Both/Practice",
+    "prompt": "Tại sao khi xử lý ảnh độ phân giải cao (ví dụ $512 \\times 512 \\times 3$), người ta sử dụng các tầng tích chập (**Convolutional Layers**) ở phần trích xuất đặc trưng thay vì duỗi phẳng (flatten) bức ảnh ngay từ đầu rồi đưa vào tầng kết nối đầy đủ (**Fully Connected / Linear Layer**)?",
+    "options": {
+      "A": "Vì tầng Linear không thể tính đạo hàm trên dữ liệu 3 kênh màu RGB.",
+      "B": "Nếu duỗi phẳng ảnh $512 \\times 512 \\times 3 = 786.432$ chiều rồi nối với chỉ 1.000 nơ-ron ẩn, riêng tầng đầu tiên đã tốn gần **800 triệu tham số**, làm mất hoàn toàn cấu trúc lân cận không gian 2D của điểm ảnh và cực kỳ dễ Overfitting; ngược lại, tầng Tích chập khai thác **tính liên kết cục bộ (local connectivity)** và **chia sẻ trọng số (weight sharing)** giúp giảm số tham số xuống hàng triệu lần và tạo tính bất biến dịch chuyển.",
+      "C": "Tầng Tích chập luôn có trường tiếp nhận (receptive field) toàn cục ngay từ tầng đầu tiên với kernel $3 \\times 3$.",
+      "D": "Tầng Tích chập không sử dụng phép nhân và cộng."
+    },
+    "correct_answer": "B",
+    "explanation": "Cơ chế Weight Sharing (dùng chung một bộ lọc kernel trượt qua toàn bộ ảnh) và Local Connectivity giúp CNN bảo toàn cấu trúc không gian 2D, nhận diện được vật thể dù nó dịch chuyển vị trí trên ảnh, đồng thời giữ số lượng tham số cực kỳ nhỏ gọn."
+  },
+  {
+    "id": 29,
+    "tag": "Practice - Image Augmentation",
+    "section": {
+      "part_number": 3,
+      "name": "PHẦN 3: THỊ GIÁC MÁY TÍNH",
+      "short_name": "Phần 3: Thị giác máy tính",
+      "en": "Computer Vision"
+    },
+    "topic": "Image Augmentation & Label Preservation",
+    "category": "Practice",
+    "prompt": "Tăng cường dữ liệu ảnh (**Image Augmentation**) là kỹ thuật rất hiệu quả để giảm Overfitting. Tuy nhiên, trong tình huống nào dưới đây, phép Augmentation được chọn sẽ **làm giảm độ chính xác thực tế** và gây hại cho mô hình?",
+    "options": {
+      "A": "Áp dụng `RandomHorizontalFlip` (lật ngang ngẫu nhiên) cho bài toán phân loại ảnh Chó và Mèo ngoài tự nhiên.",
+      "B": "Áp dụng `RandomVerticalFlip` + `RandomRotation(180)` cho bài toán nhận diện chữ số viết tay (phân biệt số `6` và số `9`), hoặc áp dụng `ColorJitter(hue=0.5, saturation=0.5)` quá mạnh cho bài toán y khoa chẩn đoán **bệnh vàng da / phân loại độ chín trái cây dựa trên màu sắc chuẩn**.",
+      "C": "Áp dụng `RandomCrop` nhẹ quanh tâm ảnh cho bài toán phân loại các dòng xe ô tô.",
+      "D": "Không áp dụng phép xoay hay lật ảnh trên tập Test."
+    },
+    "correct_answer": "B",
+    "explanation": "Nguyên tắc vàng của Data Augmentation là phép biến đổi phải **bất biến với nhãn (label-preserving)**. Lật ngược số `6` sẽ biến nó thành số `9` nhưng nhãn vẫn giữ là `6` (tạo nhãn sai); thay đổi tông màu (Hue) ngẫu nhiên sẽ phá hủy đặc trưng cốt lõi trong bài toán chẩn đoán bệnh vàng da."
+  },
+  {
+    "id": 30,
+    "tag": "Practice - Pre-trained Vision Encoders (e.g. ResNet)",
+    "section": {
+      "part_number": 3,
+      "name": "PHẦN 3: THỊ GIÁC MÁY TÍNH",
+      "short_name": "Phần 3: Thị giác máy tính",
+      "en": "Computer Vision"
+    },
+    "topic": "Pre-trained Vision Encoders (ResNet)",
+    "category": "Practice",
+    "prompt": "Bạn sử dụng mô hình **ResNet-50** đã tiền huấn luyện trên ImageNet (`pretrained=True`) để làm bộ trích xuất đặc trưng (Feature Extractor) cho bài toán phân loại 5 loài hoa. Kiến trúc ResNet nổi bật với các kết nối tắt (**Skip / Residual Connections**: $y = F(x) + x$). Ý nghĩa lý thuyết của kết nối tắt này là gì, và khi thay tầng phân loại cuối (`model.fc`), bạn cần xử lý đầu vào ảnh như thế nào?",
+    "options": {
+      "A": "Kết nối tắt giúp gradient có thể truyền trực tiếp qua đường cộng đồng nhất ($+ x$) về các tầng sớm trong quá trình Backpropagation, giải quyết hiện tượng suy thoái mạng sâu (Degradation / Vanishing Gradient); khi dùng mô hình tiền huấn luyện ImageNet, ảnh đầu vào cần được chuẩn hóa (normalize) theo cùng `mean` và `std` của ImageNet.",
+      "B": "Kết nối tắt dùng để nhân đôi số kênh của ảnh sau mỗi tầng mà không cần phép cộng.",
+      "C": "Khi dùng ResNet tiền huấn luyện, bắt buộc phải giữ nguyên tầng cuối xuất ra đúng 1.000 lớp của ImageNet, không được phép sửa thành 5 lớp.",
+      "D": "Kết nối tắt làm mô hình không thể huấn luyện trên GPU."
+    },
+    "correct_answer": "A",
+    "explanation": "Trong ResNet, đạo hàm của nhánh $\\frac{\\partial y}{\\partial x} = \\frac{\\partial F(x)}{\\partial x} + 1$ luôn có số hạng $+1$ đóng vai trò như \"đường cao tốc\" dẫn truyền gradient, ngăn chặn triệt tiêu đạo hàm khi mạng rất sâu. Khi tận dụng trọng số tiền huấn luyện, việc chuẩn hóa đầu vào theo thống kê gốc (`mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]`) giúp kích hoạt các tầng đầu đúng phân phối."
+  },
+  {
+    "id": 31,
+    "tag": "Practice - Object Detection (YOLO, SSD, DETR)",
+    "section": {
+      "part_number": 3,
+      "name": "PHẦN 3: THỊ GIÁC MÁY TÍNH",
+      "short_name": "Phần 3: Thị giác máy tính",
+      "en": "Computer Vision"
+    },
+    "topic": "Object Detection (YOLO, SSD, DETR)",
+    "category": "Practice",
+    "prompt": "Bạn cần triển khai một hệ thống phát hiện vật thể (**Object Detection**) chạy thời gian thực (yêu cầu $\\ge 60\\text{ FPS}$) trên một thiết bị nhúng biên (Edge Device có tài nguyên tính toán hạn chế) để phát hiện mũ bảo hiểm công trường. Trong khi đó, một nhóm nghiên cứu khác muốn xây dựng mô hình phát hiện vật thể đầu-cuối (end-to-end) loại bỏ hoàn toàn việc thiết kế thủ công các hộp neo (anchor boxes) và bước hậu xử lý Non-Maximum Suppression (NMS). Hai nhóm nên chọn mô hình nào tương ứng và cần lưu ý gì?",
+    "options": {
+      "A": "Nhóm 1 chọn **DETR** vì Transformer chạy nhanh nhất trên thiết bị nhúng; Nhóm 2 chọn **SSD** vì SSD không dùng anchor boxes.",
+      "B": "Nhóm 1 nên chọn họ mô hình **YOLO (hoặc SSD)** bản nhẹ vì kiến trúc CNN một giai đoạn (one-stage) tối ưu hóa cực tốt cho tốc độ suy luận thời gian thực; Nhóm 2 nên chọn **DETR (DEtection TRansformer)** vì nó dùng cơ chế ghép cặp hai phía (bipartite matching) và Transformer để dự đoán trực tiếp tập hợp hộp giới hạn mà không cần NMS, tuy nhiên DETR gốc hội tụ chậm và thường kém hơn trên các vật thể rất nhỏ.",
+      "C": "Cả YOLO, SSD và DETR đều chỉ trả về 1 nhãn duy nhất cho toàn bộ bức ảnh mà không có tọa độ hộp giới hạn (bounding box).",
+      "D": "DETR bắt buộc phải dùng thuật toán K-Means trong lúc suy luận để xóa các hộp trùng lặp."
+    },
+    "correct_answer": "B",
+    "explanation": "YOLO/SSD là đại diện tiêu biểu cho bài toán cần tốc độ cao và triển khai thực tế trên phần cứng giới hạn. DETR cách mạng hóa bài toán phát hiện vật thể bằng cách coi nó là bài toán dự đoán tập hợp trực tiếp qua Transformer (loại bỏ NMS và Anchor), nhưng nhược điểm của DETR cơ bản là thời gian huấn luyện dài và khó khăn với vật thể nhỏ."
+  },
+  {
+    "id": 32,
+    "tag": "Practice - Image Segmentation (U-Net)",
+    "section": {
+      "part_number": 3,
+      "name": "PHẦN 3: THỊ GIÁC MÁY TÍNH",
+      "short_name": "Phần 3: Thị giác máy tính",
+      "en": "Computer Vision"
+    },
+    "topic": "Image Segmentation (U-Net)",
+    "category": "Practice",
+    "prompt": "Trong bài toán phân vùng ảnh y tế theo từng điểm ảnh (**Pixel-wise Image Segmentation**, ví dụ tách biên giới khối u hoặc tế bào với số lượng ảnh huấn luyện ít), kiến trúc **U-Net** tỏ ra vượt trội hơn một mạng Autoencoder (Encoder-Decoder) thông thường không có kết nối ngang. Thành phần kiến trúc nào tạo nên sự khác biệt này của U-Net?",
+    "options": {
+      "A": "U-Net không sử dụng bất kỳ tầng giảm độ phân giải (pooling/downsampling) nào.",
+      "B": "Các **Skip Connections (kết nối nhảy)** nối trực tiếp (concatenate) các bản đồ đặc trưng độ phân giải cao từ nhánh Encoder sang nhánh Decoder tương ứng, giúp khôi phục chính xác chi tiết biên giới không gian (spatial localization) vốn đã bị mất mát khi đi qua các bước Max Pooling ở tầng cổ chai.",
+      "C": "U-Net thay thế toàn bộ các tầng tích chập bằng thuật toán K-Nearest Neighbors.",
+      "D": "Đầu ra của U-Net là một vector 1 chiều chứa tọa độ $[x, y, w, h]$."
+    },
+    "correct_answer": "B",
+    "explanation": "Khi nhánh Encoder giảm dần kích thước không gian (downsampling) để nắm bắt ngữ cảnh toàn cục (ăn khớp câu hỏi \"Cái gì trong ảnh?\"), nó làm mất thông tin vị trí chi tiết (\"Nó nằm chính xác ở pixel nào?\"). Các đường nối ngang (Skip Connections) của U-Net truyền trực tiếp thông tin không gian chi tiết từ Encoder sang Decoder để vẽ lại ranh giới sắc nét."
+  },
+  {
+    "id": 33,
+    "tag": "Practice - Generating Images: GANs vs Diffusion Models",
+    "section": {
+      "part_number": 3,
+      "name": "PHẦN 3: THỊ GIÁC MÁY TÍNH",
+      "short_name": "Phần 3: Thị giác máy tính",
+      "en": "Computer Vision"
+    },
+    "topic": "Generating Images: GANs vs Diffusion Models",
+    "category": "Practice",
+    "prompt": "Bạn đang huấn luyện một mạng **GAN (Generative Adversarial Network)** để sinh ảnh khuôn mặt nhưng gặp hiện tượng: bộ sinh (Generator) đạt hàm loss rất thấp bằng cách chỉ sinh ra **đúng 1 khuôn mặt duy nhất** lặp đi lặp lại dù đầu vào nhiễu $z$ thay đổi, và quá trình huấn luyện rất dễ mất ổn định khi Discriminator quá mạnh. Hiện tượng này gọi là gì, và nếu chuyển sang **Diffusion Models** thì ưu – nhược điểm đánh đổi sẽ là gì?",
+    "options": {
+      "A": "Hiện tượng này gọi là **Mode Collapse (Sụp đổ chế độ)** trong GAN; nếu chuyển sang **Diffusion Models**, quá trình huấn luyện sẽ ổn định hơn rất nhiều và ảnh sinh ra có độ đa dạng/chất lượng cao, nhưng **nhược điểm lớn của Diffusion Models là tốc độ suy luận (inference) chậm** do phải thực hiện khử nhiễu lặp đi lặp lại qua nhiều bước thời gian (iterative denoising steps).",
+      "B": "Hiện tượng này gọi là Vanishing ReLU; Diffusion Models sinh ảnh chỉ trong 1 phép nhân ma trận nên nhanh gấp 1.000 lần GAN.",
+      "C": "GAN sử dụng quy trình cộng nhiễu Gaussian qua 1.000 bước rồi học cách khử nhiễu.",
+      "D": "Diffusion Models dùng một mạng Discriminator để phân biệt ảnh thật và ảnh giả."
+    },
+    "correct_answer": "A",
+    "explanation": "Trò chơi cực tiểu - cực đại (minimax game) giữa Generator và Discriminator trong GAN nổi tiếng là khó cân bằng và dễ rơi vào Mode Collapse (Generator chỉ tìm ra một vài mẫu đánh lừa được Discriminator rồi ngừng đa dạng hóa). Diffusion Models tối ưu hóa hàm mục tiêu khử nhiễu trực tiếp nên rất ổn định và bao phủ phân phối tốt, đổi lại chi phí suy luận cao do phải chạy mạng nhiều bước lặp."
+  },
+  {
+    "id": 34,
+    "tag": "Practice - Self-Supervised Learning for Vision & Vision-Text Encoders (CLIP)",
+    "section": {
+      "part_number": 3,
+      "name": "PHẦN 3: THỊ GIÁC MÁY TÍNH",
+      "short_name": "Phần 3: Thị giác máy tính",
+      "en": "Computer Vision"
+    },
+    "topic": "Self-Supervised Learning for Vision & CLIP",
+    "category": "Practice",
+    "prompt": "Công ty bạn có 2 bài toán:\n- **Bài toán 1:** Cần phân loại ảnh sản phẩm thời trang theo các mô tả văn bản mới phát sinh hàng ngày (ví dụ: *\"áo khoác da màu đen cổ đứng\"*) mà **không có sẵn bất kỳ ảnh huấn luyện có nhãn nào (Zero-shot Classification)** cho các danh mục mới này.\n- **Bài toán 2:** Có **500.000 ảnh chụp vi mạch bán dẫn chưa gán nhãn** và chỉ có **200 ảnh đã được chuyên gia gán nhãn lỗi**.\n\nPhương pháp tiếp cận nào dưới đây tận dụng đúng thế mạnh của các mô hình hiện đại?",
+    "options": {
+      "A": "Bài toán 1 sử dụng mô hình **CLIP (Contrastive Language-Image Pre-training)** để so khớp độ tương đồng cosine giữa embedding ảnh và embedding câu mô tả văn bản; Bài toán 2 sử dụng **Self-Supervised Learning (SSL)** trên 500.000 ảnh không nhãn để học bộ biểu diễn đặc trưng chuyên biệt cho vi mạch trước, sau đó tinh chỉnh (fine-tune) trên 200 ảnh có nhãn.",
+      "B": "Dùng CLIP Zero-shot cho Bài toán 2 sẽ đạt độ chính xác 100% mà không cần dùng đến 200 ảnh có nhãn vì CLIP đã học thuộc mọi lỗi vi mạch hiển vi.",
+      "C": "Huấn luyện ResNet-152 từ đầu chỉ trên 200 ảnh có nhãn cho Bài toán 2.",
+      "D": "CLIP chỉ nhận đầu vào là âm thanh và xuất ra văn bản."
+    },
+    "correct_answer": "A",
+    "explanation": "CLIP ánh xạ ảnh và văn bản vào cùng một không gian embedding thông qua học tương phản (contrastive learning), cực mạnh cho Zero-shot trên các khái niệm tự nhiên/phổ thông (Bài toán 1). Tuy nhiên, trên miền dữ liệu quá chuyên biệt (như ảnh vi mạch hiển vi, ảnh y tế chuyên sâu), CLIP gốc dễ gặp lệch miền (domain shift); lúc này Self-Supervised Learning trên lượng lớn ảnh không nhãn cùng miền giúp học đặc trưng nền tảng cực tốt trước khi fine-tune trên tập nhãn nhỏ."
+  },
+  {
+    "id": 35,
+    "tag": "Practice - Tokenization, Vocabulary Building & Sequence Padding",
+    "section": {
+      "part_number": 4,
+      "name": "PHẦN 4: XỬ LÝ NGÔN NGỮ TỰ NHIÊN & ÂM THANH",
+      "short_name": "Phần 4: NLP & Âm thanh",
+      "en": "NLP & Audio"
+    },
+    "topic": "Tokenization, Vocabulary, Padding & Text Classification",
+    "category": "Practice",
+    "prompt": "Bạn xây dựng mô hình phân loại văn bản (**Text Classification**) cho bình luận mạng xã hội tiếng Việt/tiếng Anh có chứa nhiều từ lóng, từ viết sai chính tả nhẹ và từ ghép mới. Nếu bạn dùng bộ tách từ theo mức từ nguyên vẹn (**Word-level Tokenization**) với từ điển cố định 10.000 từ phổ biến nhất và gộp các chuỗi có độ dài khác nhau thành một batch bằng cách chèn token `<PAD>` vào cuối chuỗi ngắn, bạn cần lưu ý hai vấn đề kỹ thuật nào?",
+    "options": {
+      "A": "Word-level Tokenization sẽ biến mọi từ mới/từ viết sai chính tả thành cùng một token `<UNK>` (Out-Of-Vocabulary), làm mất thông tin gốc từ — nên chuyển sang **Subword Tokenization (như BPE, WordPiece)**; đồng thời khi dùng `<PAD>`, bắt buộc phải truyền **Attention Mask (Padding Mask)** vào mô hình để các tầng Attention/Pooling không tính gộp các vị trí `<PAD>` vào biểu diễn văn bản.",
+      "B": "Token `<PAD>` chứa thông tin ngữ nghĩa quan trọng nhất của câu nên cần gán trọng số Attention bằng 1.0.",
+      "C": "Word-level Tokenization không bao giờ gặp hiện tượng từ ngoài từ điển (OOV).",
+      "D": "Để xử lý các câu có độ dài khác nhau trong một batch, PyTorch tự động cho phép tạo một Tensor 2D có các hàng dài ngắn khác nhau mà không cần Padding hay Masking."
+    },
+    "correct_answer": "A",
+    "explanation": "Subword Tokenization (như Byte-Pair Encoding hoặc WordPiece trong BERT/GPT) tách các từ hiếm thành các mảnh từ nhỏ hơn có nghĩa, giải quyết triệt để bài toán OOV (`<UNK>`). Ngoài ra, khi đệm `<PAD>` để đồng nhất chiều dài tensor trong batch, nếu quên truyền `attention_mask`, mô hình sẽ chú ý vào cả các token đệm vô nghĩa (đặc biệt với các câu ngắn có tới 80% là `<PAD>`)."
+  },
+  {
+    "id": 36,
+    "tag": "Both - Pre-trained Text Encoders (BERT) vs Language Modeling",
+    "section": {
+      "part_number": 4,
+      "name": "PHẦN 4: XỬ LÝ NGÔN NGỮ TỰ NHIÊN & ÂM THANH",
+      "short_name": "Phần 4: NLP & Âm thanh",
+      "en": "NLP & Audio"
+    },
+    "topic": "Pre-trained Text Encoders (BERT) vs Language Modeling",
+    "category": "Both",
+    "prompt": "Bạn cần chọn kiến trúc mô hình cho 2 tác vụ NLP khác nhau:\n- **Tác vụ 1:** Trích xuất thực thể có tên (Named Entity Recognition) và Phân loại cảm xúc câu văn (cần hiểu ngữ cảnh từ cả phía trước lẫn phía sau của một từ trong câu).\n- **Tác vụ 2:** Sinh văn bản tự động tiếp nối câu nhắc của người dùng (Text Generation / Autoregressive Language Modeling).\n\nSự khác biệt cốt lõi giữa mô hình kiểu **BERT (Pre-trained Text Encoder)** và mô hình **Causal Language Model (Decoder-only như GPT)** khi áp dụng vào 2 tác vụ này là gì?",
+    "options": {
+      "A": "**BERT** sử dụng cơ chế **Bidirectional Self-Attention** (nhìn thấy toàn bộ câu hai chiều trái-phải) và được tiền huấn luyện bằng Masked Language Modeling (MLM), rất phù hợp cho Tác vụ 1 (hiểu và trích xuất đặc trưng); ngược lại, Tác vụ 2 cần mô hình sử dụng **Causal (Masked) Self-Attention** (che đi các token tương lai để dự đoán từ tiếp theo $P(w_t | w_{<t})$).",
+      "B": "BERT là mô hình chuyên dùng để sinh văn bản dài tự hồi quy nhanh nhất vì nó dùng ma trận che (causal mask) tam giác dưới.",
+      "C": "Nếu bỏ ma trận che tương lai (causal mask) trong quá trình huấn luyện Language Modeling dự đoán từ tiếp theo, mô hình sẽ học tốt hơn mà không bị rò rỉ đáp án.",
+      "D": "BERT không sử dụng kiến trúc Transformer."
+    },
+    "correct_answer": "A",
+    "explanation": "BERT là bộ mã hóa hai chiều (Encoder-only): mỗi token được phép chú ý tới mọi token khác cả bên trái lẫn bên phải, tạo ra vector biểu diễn ngữ cảnh sâu sắc cho phân loại/trích xuất nhưng không thể dùng trực tiếp để sinh văn bản tự hồi quy chuẩn. Ngược lại, Language Modeling sinh văn bản cần Causal Mask để đảm bảo tại bước $t$, mô hình không nhìn trộm token ở vị trí $t+1$."
+  },
+  {
+    "id": 37,
+    "tag": "Practice - Encoder-Decoder Models (Machine Translation & Vision-Language)",
+    "section": {
+      "part_number": 4,
+      "name": "PHẦN 4: XỬ LÝ NGÔN NGỮ TỰ NHIÊN & ÂM THANH",
+      "short_name": "Phần 4: NLP & Âm thanh",
+      "en": "NLP & Audio"
+    },
+    "topic": "Encoder-Decoder Models (Translation & VLM)",
+    "category": "Practice",
+    "prompt": "Trong các mô hình **Encoder-Decoder** (ví dụ: dịch máy từ tiếng Anh sang tiếng Việt, hoặc mô hình Vision-Language nhận đầu vào là một bức ảnh từ Vision Encoder và sinh ra câu mô tả ảnh ở Text Decoder), cơ chế nào đóng vai trò **cầu nối trực tiếp** giúp Decoder lấy được thông tin từ đầu ra của Encoder ở mỗi bước sinh từ?",
+    "options": {
+      "A": "Tầng Max Pooling 3D đặt ở cuối Decoder.",
+      "B": "Cơ chế **Cross-Attention (Encoder-Decoder Attention)** trong Decoder, trong đó các vector **Query ($Q$)** được tạo ra từ trạng thái ẩn của Decoder (ngôn ngữ đích), còn các vector **Key ($K$)** và **Value ($V$)** được lấy từ biểu diễn đầu ra của Encoder (câu nguồn hoặc các patch ảnh).",
+      "C": "Cơ chế Self-Attention trong Encoder tự động sinh ra câu tiếng Việt mà không cần Decoder.",
+      "D": "Việc khởi tạo trọng số của Decoder bằng đúng số lượng từ của câu nguồn."
+    },
+    "correct_answer": "B",
+    "explanation": "Trong kiến trúc Encoder-Decoder, sau khi Encoder mã hóa đầu vào (văn bản nguồn hoặc ảnh) thành chuỗi vector đặc trưng, Decoder sử dụng tầng **Cross-Attention**: dùng trạng thái hiện tại của câu đang sinh làm Query ($Q$) để truy vấn thông tin liên quan từ Key ($K$) và Value ($V$) của Encoder."
+  },
+  {
+    "id": 38,
+    "tag": "Practice - Pre-trained Language Models (Open-source vs API-based)",
+    "section": {
+      "part_number": 4,
+      "name": "PHẦN 4: XỬ LÝ NGÔN NGỮ TỰ NHIÊN & ÂM THANH",
+      "short_name": "Phần 4: NLP & Âm thanh",
+      "en": "NLP & Audio"
+    },
+    "topic": "Pre-trained Language Models (Open-source vs API)",
+    "category": "Practice",
+    "prompt": "Một bệnh viện muốn xây dựng hệ thống tóm tắt và trích xuất thông tin từ hồ sơ bệnh án điện tử chứa thông tin cá nhân nhạy cảm của bệnh nhân. Quy định pháp lý yêu cầu **tuyệt đối không được gửi dữ liệu bệnh nhân ra máy chủ bên ngoài nội bộ bệnh viện**, đồng thời hệ thống phải trích xuất đúng số liệu xét nghiệm có trong văn bản mà không được tự bịa thêm thông tin y khoa. Chiến lược triển khai nào sau đây là phù hợp nhất?",
+    "options": {
+      "A": "Gửi trực tiếp toàn bộ hồ sơ bệnh án qua mạng Internet tới một **API-based LLM** công cộng và đặt tham số `temperature = 1.8` để mô hình sáng tạo tối đa.",
+      "B": "Triển khai một **Open-source Pre-trained Language Model** (chạy cục bộ on-premise trên máy chủ của bệnh viện) để đảm bảo quyền riêng tư dữ liệu; kết hợp đặt `temperature` thấp (tiệm cận `0`), cung cấp ngữ cảnh bệnh án rõ ràng trong prompt để hạn chế hiện tượng **ảo giác (Hallucination)**.",
+      "C": "Dùng mô hình phân loại cảm xúc (Sentiment Analysis) 2 lớp (Tích cực / Tiêu cực) để tóm tắt văn bản bệnh án.",
+      "D": "Các mô hình ngôn ngữ lớn (LLM) không bao giờ gặp hiện tượng sinh thông tin sai sự thật (Hallucination) nếu câu văn đúng ngữ pháp."
+    },
+    "correct_answer": "B",
+    "explanation": "Khi lựa chọn giữa API-based LLM và Open-source LLM chạy cục bộ, yếu tố bảo mật dữ liệu nhạy cảm (Data Privacy), kiểm soát chi phí/độ trễ và khả năng tùy biến là tiêu chí quyết định. Ngoài ra, để giảm thiểu nhược điểm cố hữu là Hallucination (bịa thông tin trôi chảy nhưng sai sự thật) trong các tác vụ trích xuất, cần hạ `temperature` về gần 0 và ràng buộc mô hình bám sát văn bản nguồn."
+  },
+  {
+    "id": 39,
+    "tag": "Practice - Audio Data Processing & Pre-trained Audio Encoders (HuBERT)",
+    "section": {
+      "part_number": 4,
+      "name": "PHẦN 4: XỬ LÝ NGÔN NGỮ TỰ NHIÊN & ÂM THANH",
+      "short_name": "Phần 4: NLP & Âm thanh",
+      "en": "NLP & Audio"
+    },
+    "topic": "Audio Data Processing & Pre-trained Encoders (HuBERT)",
+    "category": "Practice",
+    "prompt": "Bạn sử dụng mô hình tiền huấn luyện âm thanh **HuBERT** (được tiền huấn luyện ở tần số lấy mẫu chuẩn **16.000 Hz / 16kHz**) để trích xuất đặc trưng giọng nói nhằm phân loại cảm xúc người nói (Speaker Emotion Recognition). Tập dữ liệu âm thanh bạn thu thập từ phòng thu có tần số lấy mẫu là **48.000 Hz (48kHz)** và các tệp âm thanh có độ dài từ 2 giây đến 15 giây. Nếu bạn truyền trực tiếp mảng số biên độ (raw waveform array) của tệp 48kHz vào HuBERT mà **không thực hiện lấy mẫu lại (resampling) về 16kHz**, hiện tượng gì sẽ xảy ra?",
+    "options": {
+      "A": "Mô hình HuBERT sẽ hiểu đoạn âm thanh đang bị **tua chậm gấp 3 lần** (cao độ giọng nói bị trầm xuống và tốc độ nói giãn ra 3 lần so với phân phối mà mô hình đã học), làm lệch hoàn toàn các đặc trưng tần số và ngữ điệu cảm xúc.",
+      "B": "Không có ảnh hưởng gì vì mạng nơ-ron chỉ đếm số lượng tệp âm thanh chứ không quan tâm đến tần số lấy mẫu.",
+      "C": "Âm thanh sẽ tự động biến thành ảnh RGB 3 kênh.",
+      "D": "HuBERT chỉ nhận đầu vào là văn bản chữ viết, không nhận tín hiệu âm thanh."
+    },
+    "correct_answer": "A",
+    "explanation": "Một giây âm thanh ở 48kHz chứa 48.000 mẫu điểm rời rạc. Vì HuBERT được huấn luyện với giả định 16.000 mẫu tương ứng với 1 giây thực tế, việc đưa trực tiếp 48.000 mẫu vào sẽ khiến mô hình tưởng đó là 3 giây âm thanh (giọng nói bị kéo giãn và hạ trầm đi 3 lần). Do đó, trong tiền xử lý âm thanh, bước đồng bộ tần số lấy mẫu (`resample(orig_freq=48000, new_freq=16000)`) là bắt buộc."
+  },
+  {
+    "id": 40,
+    "tag": "Practice - Audio Models: Whisper, Qwen-Audio, Voxtral",
+    "section": {
+      "part_number": 4,
+      "name": "PHẦN 4: XỬ LÝ NGÔN NGỮ TỰ NHIÊN & ÂM THANH",
+      "short_name": "Phần 4: NLP & Âm thanh",
+      "en": "NLP & Audio"
+    },
+    "topic": "Audio Models: Whisper, Qwen-Audio, Voxtral",
+    "category": "Practice",
+    "prompt": "Bạn có hai bài toán ứng dụng xử lý âm thanh thực tế:\n- **Bài toán 1:** Chuyển đổi chính xác lời nói tiếng Việt và tiếng Anh trong cuộc họp thành văn bản (Automatic Speech Recognition - ASR). Tuy nhiên, trong file ghi âm có những đoạn im lặng kéo dài 30 giây chỉ có tiếng quạt gió nhẹ.\n- **Bài toán 2:** Xây dựng trợ lý thông minh nhận đầu vào là một đoạn âm thanh phức hợp (gồm cả lời nói, tiếng còi xe cứu thương hú vang và tiếng kính vỡ) kèm câu hỏi văn bản: *\"Chuyện gì đang xảy ra xung quanh người nói và giọng của họ có hoảng loạn không?\"*.\n\nCách lựa chọn mô hình và chẩn đoán lỗi nào sau đây là chuẩn xác nhất?",
+    "options": {
+      "A": "Bài toán 1 dùng **BERT**; Bài toán 2 dùng **K-Means**.",
+      "B": "Bài toán 1 phù hợp với **Whisper** (mô hình Encoder-Decoder chuyên biệt cho ASR và dịch giọng nói), nhưng cần lưu ý dấu hiệu lỗi của Whisper trên các đoạn im lặng/nhiễu nền dài là hiện tượng **lặp câu hoặc ảo giác văn bản (ASR Hallucination)** (cần kết hợp bộ phát hiện tiếng nói VAD - Voice Activity Detection để cắt bỏ khoảng lặng); Bài toán 2 cần dùng các mô hình âm thanh-ngôn ngữ đa phương thức như **Qwen-Audio hoặc Voxtral** vì chúng có khả năng hiểu cả âm thanh môi trường, cảm xúc giọng nói và trả lời câu hỏi mở thay vì chỉ chép lời.",
+      "C": "Whisper không thể chuyển giọng nói thành văn bản mà chỉ dùng để phân cụm ảnh y tế.",
+      "D": "Qwen-Audio và Voxtral chỉ xử lý được các tệp văn bản thuần túy không có âm thanh."
+    },
+    "correct_answer": "B",
+    "explanation": "**Whisper** là mô hình tiêu chuẩn vàng cho ASR (Speech-to-Text), nhưng có nhược điểm nổi tiếng là sinh ra các câu lặp vô nghĩa (ví dụ: *\"Cảm ơn các bạn đã theo dõi...\"*) khi gặp các đoạn âm thanh không có tiếng người nói (silence/noise), do đó thực tế cần dùng VAD tiền xử lý. Ngược lại, khi bài toán vượt ra khỏi việc chép lời thuần túy sang suy luận ngữ cảnh âm thanh tổng hợp và hội thoại đa phương thức, các mô hình **Audio-LLM như Qwen-Audio hoặc Voxtral** là lựa chọn phù hợp."
+  }
+]

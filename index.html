@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark" data-font-size="large">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ Thống Kiểm Tra Đánh Giá Năng Lực AI & Machine Learning (IOAI 2026 Master Exam)</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- KaTeX for crisp mathematical formulas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+  <!-- Prism.js for syntax-highlighted code blocks -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+
+  <!-- Main App Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Sticky Glassmorphism Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="header-brand">
+        <div class="header-logo-icon">🤖</div>
+        <div class="header-title-box">
+          <h1>
+            Đánh Giá Năng Lực AI & ML
+          </h1>
+          <p>40 câu hỏi chuyên sâu (Nền tảng ML, Deep Learning, CV & NLP) • Thời gian: 40 phút</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Dynamic Font Size Controller (+4 Levels default: 23px) -->
+        <div class="font-size-widget" id="fontSizeWidget" title="Điều chỉnh cỡ chữ câu hỏi & đáp án">
+          <span class="lbl-size">Cỡ chữ:</span>
+          <button class="btn-font-size" data-size="normal" title="Cỡ chữ vừa (19px)">A</button>
+          <button class="btn-font-size active" data-size="large" title="To hơn 2 bậc nữa (23px - Mặc định)">A+ (To +4 bậc)</button>
+          <button class="btn-font-size" data-size="xlarge" title="Cỡ chữ cực lớn (26.5px)">A++</button>
+        </div>
+
+        <!-- Countdown Timer -->
+        <div class="timer-pill" id="timerPill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span class="timer-display" id="timerDisplay">40:00</span>
+          <button class="timer-btn" id="timerToggleBtn" title="Tạm dừng / Tiếp tục">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="progress-pill">
+          <span>Tiến độ:</span>
+          <div class="progress-bar-mini">
+            <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+          </div>
+          <span id="progressText" style="font-weight: 700;">0/40</span>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button class="icon-btn" id="themeToggleBtn" title="Đổi giao diện Sáng / Tối">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </button>
+
+        <!-- Switch to Exam 2 -->
+        <a href="index_v2.html" class="btn-switch-quiz" title="Chuyển sang Đề thi 2 (Nội dung ai_studio_code1.txt)">
+          ⚡ Sang Đề 2
+        </a>
+
+        <!-- Question Palette Toggle Button (Next to Submit) -->
+        <button class="btn-palette-toggle" id="btnPaletteToggle" title="Mở bảng danh sách 40 câu hỏi">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span>Bảng câu hỏi</span>
+          <span class="palette-counter-badge" id="paletteCounterBadge">0/40</span>
+        </button>
+
+        <!-- Header Submit Button -->
+        <button class="btn-submit-header" id="btnSubmitHeader">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Nộp bài
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       VIEW 1: TEST MODE (LÀM BÀI THI)
+       ========================================== -->
+  <main class="app-main" id="testView">
+    <!-- Left Column: Questions Area -->
+    <div class="main-questions-column">
+      <!-- Section Filters -->
+      <div class="section-filter-bar" id="sectionFilterBar">
+        <button class="filter-tab active" data-filter="all">
+          Tất cả <span class="filter-count">40</span>
+        </button>
+        <button class="filter-tab" data-filter="1">
+          Phần 1: Syllabus Core <span class="filter-count">16</span>
+        </button>
+        <button class="filter-tab" data-filter="2">
+          Phần 2: Day 1 Tasks <span class="filter-count">7</span>
+        </button>
+        <button class="filter-tab" data-filter="3">
+          Phần 3: Day 2 Tasks <span class="filter-count">11</span>
+        </button>
+        <button class="filter-tab" data-filter="4">
+          Phần 4: At-Home Tasks <span class="filter-count">6</span>
+        </button>
+      </div>
+
+      <!-- View Mode Bar -->
+      <div class="view-mode-bar">
+        <div class="view-mode-toggles" id="viewModeToggles">
+          <button class="mode-btn active" data-mode="focus">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            </svg>
+            Tập trung từng câu
+          </button>
+          <button class="mode-btn" data-mode="all">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+            Xem toàn bộ đề
+          </button>
+        </div>
+
+        <div style="font-size: 13px; color: var(--text-dim);">
+          Phím tắt: <kbd style="background:var(--bg-card); padding:2px 6px; border-radius:4px; border:1px solid var(--border-color);">←</kbd> <kbd style="background:var(--bg-card); padding:2px 6px; border-radius:4px; border:1px solid var(--border-color);">→</kbd> chuyển câu • <kbd style="background:var(--bg-card); padding:2px 6px; border-radius:4px; border:1px solid var(--border-color);">1-4</kbd> chọn đáp án • <kbd style="background:var(--bg-card); padding:2px 6px; border-radius:4px; border:1px solid var(--border-color);">F</kbd> gắn cờ
+        </div>
+      </div>
+
+      <!-- Container where question cards are rendered -->
+      <div id="questionsContainer"></div>
+    </div>
+  </main>
+
+  <!-- ==========================================
+       VIEW 2: RESULT SCREEN (BẢNG ĐIỂM TỔNG HỢP)
+       ========================================== -->
+  <div class="result-container" id="resultView" style="display: none;">
+    <!-- Hero Scorecard -->
+    <div class="result-hero">
+      <div class="hero-tier-badge" id="heroTierBadge">🏆 Xuất sắc (Mastery)</div>
+      
+      <div class="hero-score-ring">
+        <span class="score-big" id="heroScoreNum">34</span>
+        <span class="score-scale">/ 40 câu đúng</span>
+      </div>
+
+      <div class="score-details-row">
+        <div class="score-detail-box">
+          <div class="val" id="heroAccuracy">85%</div>
+          <div class="lbl">Tỷ lệ chính xác</div>
+        </div>
+        <div class="score-detail-box">
+          <div class="val" id="heroScore10">8.5</div>
+          <div class="lbl">Thang điểm 10</div>
+        </div>
+        <div class="score-detail-box">
+          <div class="val" id="heroTimeSpent">45m 12s</div>
+          <div class="lbl">Thời gian làm bài</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Performance Breakdown -->
+    <div class="breakdown-card">
+      <h3>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        Đánh giá năng lực theo từng mảng kiến thức IOAI
+      </h3>
+      <div class="breakdown-grid" id="breakdownGrid"></div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="result-actions-card">
+      <div class="action-btn-group">
+        <!-- Review Mistakes Only - Primary User Request -->
+        <button class="btn-action-primary" id="btnReviewWrong">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+          Xem lại các câu sai
+        </button>
+
+        <button class="btn-secondary" id="btnReviewAll">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Xem lại toàn bộ bài thi
+        </button>
+
+        <button class="btn-secondary" id="btnRetryWrong" title="Làm lại chỉ những câu vừa làm sai">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+          </svg>
+          Làm lại các câu sai
+        </button>
+      </div>
+
+      <div class="action-btn-group">
+        <button class="btn-secondary" id="btnRetakeAll">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2M2 12.5a10 10 0 0 0 18.8 4.2"/>
+          </svg>
+          Thi lại toàn bộ
+        </button>
+
+        <button class="btn-secondary" id="btnPrintResult">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          In / Lưu PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       VIEW 3: REVIEW MODE (XEM LẠI & CHỮA BÀI)
+       ========================================== -->
+  <div class="result-container" id="reviewView" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <h2 style="font-size: 24px; font-weight: 800; letter-spacing: -0.02em;">Chữa Đề Chi Tiết & Phân Tích Câu Sai</h2>
+        <p style="font-size: 14.5px; color: var(--text-muted);">Đối chiếu lựa chọn của bạn với đáp án đúng, kiểm tra sơ đồ luồng dữ liệu, code snippet và giải thích chuyên sâu.</p>
+      </div>
+      <button class="btn-secondary" id="btnBackToResult">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Quay lại bảng điểm
+      </button>
+    </div>
+
+    <!-- Review Filter Tabs -->
+    <div class="review-filter-bar" id="reviewFilterBar">
+      <button class="review-filter-btn active" data-review-filter="all">Tất cả câu (40)</button>
+      <button class="review-filter-btn btn-wrong" data-review-filter="wrong">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        Chỉ xem câu sai
+      </button>
+      <button class="review-filter-btn btn-correct" data-review-filter="correct">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Câu làm đúng
+      </button>
+      <button class="review-filter-btn" data-review-filter="unanswered">Câu chưa làm</button>
+      <button class="review-filter-btn" data-review-filter="flagged">Câu gắn cờ ⚑</button>
+    </div>
+
+    <!-- Container for Detailed Review Cards -->
+    <div id="reviewQuestionsContainer"></div>
+  </div>
+
+  <!-- ==========================================
+       COLLAPSIBLE QUESTION PALETTE DRAWER (SLIDE-OVER)
+       ========================================== -->
+  <div class="palette-drawer-overlay" id="paletteOverlay"></div>
+  <aside class="palette-drawer" id="paletteDrawer">
+    <div class="palette-drawer-header">
+      <div class="palette-drawer-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <h3>Bảng câu hỏi (40 câu)</h3>
+      </div>
+      <button class="palette-close-btn" id="btnPaletteClose" title="Đóng bảng câu hỏi">✕</button>
+    </div>
+
+    <div class="palette-drawer-body">
+      <!-- Mini stats summary -->
+      <div class="matrix-stats">
+        <div class="stat-item stat-answered">
+          <div class="stat-num" id="statAnswered">0</div>
+          <div class="stat-label">Đã làm</div>
+        </div>
+        <div class="stat-item stat-flagged">
+          <div class="stat-num" id="statFlagged">0</div>
+          <div class="stat-label">Gắn cờ</div>
+        </div>
+        <div class="stat-item stat-remain">
+          <div class="stat-num" id="statRemain">40</div>
+          <div class="stat-label">Chưa làm</div>
+        </div>
+      </div>
+
+      <!-- 40 Question Cells -->
+      <div class="matrix-grid" id="matrixGrid"></div>
+
+      <!-- Legend -->
+      <div class="matrix-legend">
+        <div class="legend-item"><div class="legend-dot answered"></div> Đã chọn</div>
+        <div class="legend-item"><div class="legend-dot unanswered"></div> Chưa làm</div>
+        <div class="legend-item"><div class="legend-dot flagged"></div> Đã gắn cờ</div>
+      </div>
+
+      <!-- Drawer Submit Button -->
+      <button class="btn-submit-main" id="btnSubmitMain">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        Nộp bài kiểm tra
+      </button>
+    </div>
+  </aside>
+
+  <!-- ==========================================
+       SUBMIT CONFIRMATION MODAL
+       ========================================== -->
+  <div class="modal-overlay" id="submitModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-icon warning">⚠️</div>
+        <h3>Xác nhận nộp bài</h3>
+      </div>
+      <div class="modal-body">
+        Bạn có chắc chắn muốn kết thúc bài thi và nộp kết quả ngay bây giờ không?
+        <div class="modal-summary-box">
+          <div>
+            <div style="font-size: 22px; font-weight: 800; color: var(--primary);" id="modalAnswered">0</div>
+            <div style="font-size: 11.5px; color: var(--text-dim);">Đã trả lời</div>
+          </div>
+          <div>
+            <div style="font-size: 22px; font-weight: 800; color: var(--danger);" id="modalRemain">0</div>
+            <div style="font-size: 11.5px; color: var(--text-dim);">Chưa làm</div>
+          </div>
+          <div>
+            <div style="font-size: 22px; font-weight: 800; color: var(--warning);" id="modalFlagged">0</div>
+            <div style="font-size: 11.5px; color: var(--text-dim);">Đang gắn cờ</div>
+          </div>
+        </div>
+        Sau khi nộp bài, hệ thống sẽ tính điểm tự động và mở giao diện phân tích câu sai kèm giải thích chi tiết.
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="btnModalCancel">Tiếp tục làm bài</button>
+        <button class="btn-primary" id="btnModalConfirm">Xác nhận nộp bài</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Media & Diagram Lightbox Modal -->
+  <div class="lightbox-modal" id="lightboxModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="lightbox-backdrop" id="lightboxBackdrop"></div>
+    <div class="lightbox-container">
+      <div class="lightbox-header">
+        <div class="lightbox-title" id="lightboxTitle">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+          <span id="lightboxTitleText">Chi tiết sơ đồ kiến trúc / Luồng dữ liệu</span>
+        </div>
+        <div class="lightbox-actions">
+          <button type="button" class="btn-lightbox-tool" id="btnLightboxZoomOut" title="Thu nhỏ (-25%)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </button>
+          <span class="lightbox-zoom-val" id="lightboxZoomVal">100%</span>
+          <button type="button" class="btn-lightbox-tool" id="btnLightboxZoomIn" title="Phóng to (+25%)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </button>
+          <button type="button" class="btn-lightbox-tool" id="btnLightboxReset" title="Đặt lại kích thước chuẩn (100%)">100%</button>
+          <button type="button" class="btn-lightbox-close" id="btnLightboxClose" title="Đóng cửa sổ (ESC)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="lightbox-body" id="lightboxBody">
+        <div class="lightbox-content-scaler" id="lightboxContentScaler"></div>
+      </div>
+      <div class="lightbox-footer">
+        <span>💡 <strong>Mẹo:</strong> Lăn con trỏ chuột để phóng to/thu nhỏ, nhấn giữ chuột để kéo di chuyển, hoặc bấm phím <code>ESC</code> để đóng.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- KaTeX Scripts for Math Rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Prism Scripts for Python Syntax Highlighting -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+
+  <!-- Mermaid.js for Rendering Architecture & Flow Diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default',
+        securityLevel: 'loose',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        themeVariables: {
+          fontSize: '18px',
+          fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+        },
+        flowchart: {
+          useMaxWidth: false,
+          htmlLabels: true,
+          curve: 'basis'
+        }
+      });
+    }
+  </script>
+
+  <!-- Loaded Question Data (40 questions from ai_studio_code.txt) -->
+  <script>window.QUIZ_VERSION = 'v1';</script>
+  <script src="quiz_data.js"></script>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
