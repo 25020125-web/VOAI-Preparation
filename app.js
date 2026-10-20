@@ -20,9 +20,9 @@
     reviewFilter: 'all', // 'all' | 'wrong' | 'correct' | 'unanswered' | 'flagged'
     isMistakesOnlyMode: false,
     
-    // Timer (in seconds) - 40 minutes = 2400s
-    totalTimeSeconds: 40 * 60,
-    timeRemaining: 40 * 60,
+    // Timer (in seconds) - 60 minutes = 3600s
+    totalTimeSeconds: 60 * 60,
+    timeRemaining: 60 * 60,
     timerInterval: null,
     isTimerPaused: false,
     timeElapsed: 0,
@@ -117,10 +117,7 @@
   };
 
   function updateStorageKeys() {
-    const isV2 = window.QUIZ_VERSION === 'v2' || 
-                 (STATE.allQuestions.length > 0 && 
-                  (Boolean(STATE.allQuestions[0]?.prompt?.includes('lò phản ứng')) || 
-                   Boolean(STATE.allQuestions[0]?.tag?.includes('Syllabus - Practice'))));
+    const isV2 = window.QUIZ_VERSION === 'v2';
     const prefix = isV2 ? 'ioai_quiz_v2' : 'ioai_quiz_v1';
     STORAGE_KEYS.ANSWERS = `${prefix}_answers`;
     STORAGE_KEYS.FLAGGED = `${prefix}_flagged`;
@@ -229,8 +226,15 @@
       if (savedTime) {
         const parsed = parseInt(savedTime, 10);
         if (!isNaN(parsed)) {
-          STATE.timeRemaining = Math.min(parsed, STATE.totalTimeSeconds);
+          // If no questions answered yet or past 40m cap, ensure full 60m
+          if (Object.keys(STATE.userAnswers).length === 0) {
+            STATE.timeRemaining = STATE.totalTimeSeconds;
+          } else {
+            STATE.timeRemaining = Math.min(parsed, STATE.totalTimeSeconds);
+          }
         }
+      } else {
+        STATE.timeRemaining = STATE.totalTimeSeconds;
       }
 
       const savedSubmitted = localStorage.getItem(STORAGE_KEYS.SUBMITTED);
@@ -306,11 +310,13 @@
 
     if (DOM.timerPill) {
       if (STATE.timeRemaining <= 180) { // <= 3 mins (Danger)
-        DOM.timerPill.className = 'timer-pill danger';
+        DOM.timerPill.classList.add('danger');
+        DOM.timerPill.classList.remove('warning');
       } else if (STATE.timeRemaining <= 600) { // <= 10 mins (Warning)
-        DOM.timerPill.className = 'timer-pill warning';
+        DOM.timerPill.classList.add('warning');
+        DOM.timerPill.classList.remove('danger');
       } else {
-        DOM.timerPill.className = 'timer-pill';
+        DOM.timerPill.classList.remove('warning', 'danger');
       }
     }
   }

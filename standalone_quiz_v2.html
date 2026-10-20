@@ -338,6 +338,90 @@ body {
   color: var(--text-main);
 }
 
+/* Sidebar Timer Bar & Modern Countdown Pill */
+.sidebar-timer-bar {
+  display: flex;
+  width: 100%;
+}
+
+.sidebar-timer-bar .timer-pill {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.sidebar-timer-bar .timer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.sidebar-timer-bar .timer-center {
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-timer-bar .timer-display {
+  font-size: 21px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--primary);
+  letter-spacing: 1.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebar-timer-bar .timer-pill.warning {
+  border-color: var(--warning);
+  background: var(--warning-bg);
+}
+
+.sidebar-timer-bar .timer-pill.warning .timer-display,
+.sidebar-timer-bar .timer-pill.warning .timer-left {
+  color: var(--warning);
+}
+
+.sidebar-timer-bar .timer-pill.danger {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+  animation: pulse-border 1s infinite;
+}
+
+.sidebar-timer-bar .timer-pill.danger .timer-display,
+.sidebar-timer-bar .timer-pill.danger .timer-left {
+  color: var(--danger);
+}
+
+.sidebar-timer-bar .timer-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.sidebar-timer-bar .timer-btn:hover {
+  background: var(--bg-surface-soft);
+  color: var(--text-main);
+  border-color: var(--primary);
+}
+
 /* Progress Indicator */
 .progress-pill {
   display: flex;
@@ -2109,7 +2193,7 @@ code {
           Đánh Giá Năng Lực AI & ML
           <span class="badge-ioai">Đề 2: IOAI 2026 Contest (ai_studio_code 3)</span>
         </h1>
-        <p class="exam-desc">40 câu hỏi chuyên sâu (Syllabus Core, Day 1, Day 2 & At-Home Tasks) • Thời gian: 40 phút</p>
+        <p class="exam-desc">40 câu hỏi chuyên sâu (Syllabus Core, Day 1, Day 2 & At-Home Tasks) • Thời gian: 60 phút</p>
       </div>
 
       <!-- Section Filters -->
@@ -2160,6 +2244,26 @@ code {
 
     <!-- Right Column: Bảng câu hỏi & Quick Actions -->
     <aside class="sidebar-column" id="paletteDrawer">
+      <!-- Countdown Timer (60 phút) -->
+      <div class="sidebar-timer-bar">
+        <div class="timer-pill" id="timerPill">
+          <div class="timer-left">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span class="timer-label">Thời gian:</span>
+          </div>
+          <div class="timer-center">
+            <span class="timer-display" id="timerDisplay">60:00</span>
+          </div>
+          <button class="timer-btn" id="timerToggleBtn" title="Tạm dừng / Tiếp tục">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
       <!-- Quick Actions: Sang Đề 1 & Nộp bài -->
       <div class="sidebar-actions">
         <a href="standalone_quiz_v1.html" class="btn-switch-quiz" title="Chuyển sang Đề thi 1 (Nội dung ai_studio_code.txt)">
@@ -3356,9 +3460,9 @@ window.QUIZ_DATA = [
     reviewFilter: 'all', // 'all' | 'wrong' | 'correct' | 'unanswered' | 'flagged'
     isMistakesOnlyMode: false,
     
-    // Timer (in seconds) - 40 minutes = 2400s
-    totalTimeSeconds: 40 * 60,
-    timeRemaining: 40 * 60,
+    // Timer (in seconds) - 60 minutes = 3600s
+    totalTimeSeconds: 60 * 60,
+    timeRemaining: 60 * 60,
     timerInterval: null,
     isTimerPaused: false,
     timeElapsed: 0,
@@ -3453,10 +3557,7 @@ window.QUIZ_DATA = [
   };
 
   function updateStorageKeys() {
-    const isV2 = window.QUIZ_VERSION === 'v2' || 
-                 (STATE.allQuestions.length > 0 && 
-                  (Boolean(STATE.allQuestions[0]?.prompt?.includes('lò phản ứng')) || 
-                   Boolean(STATE.allQuestions[0]?.tag?.includes('Syllabus - Practice'))));
+    const isV2 = window.QUIZ_VERSION === 'v2';
     const prefix = isV2 ? 'ioai_quiz_v2' : 'ioai_quiz_v1';
     STORAGE_KEYS.ANSWERS = `${prefix}_answers`;
     STORAGE_KEYS.FLAGGED = `${prefix}_flagged`;
@@ -3565,8 +3666,15 @@ window.QUIZ_DATA = [
       if (savedTime) {
         const parsed = parseInt(savedTime, 10);
         if (!isNaN(parsed)) {
-          STATE.timeRemaining = Math.min(parsed, STATE.totalTimeSeconds);
+          // If no questions answered yet or past 40m cap, ensure full 60m
+          if (Object.keys(STATE.userAnswers).length === 0) {
+            STATE.timeRemaining = STATE.totalTimeSeconds;
+          } else {
+            STATE.timeRemaining = Math.min(parsed, STATE.totalTimeSeconds);
+          }
         }
+      } else {
+        STATE.timeRemaining = STATE.totalTimeSeconds;
       }
 
       const savedSubmitted = localStorage.getItem(STORAGE_KEYS.SUBMITTED);
@@ -3642,11 +3750,13 @@ window.QUIZ_DATA = [
 
     if (DOM.timerPill) {
       if (STATE.timeRemaining <= 180) { // <= 3 mins (Danger)
-        DOM.timerPill.className = 'timer-pill danger';
+        DOM.timerPill.classList.add('danger');
+        DOM.timerPill.classList.remove('warning');
       } else if (STATE.timeRemaining <= 600) { // <= 10 mins (Warning)
-        DOM.timerPill.className = 'timer-pill warning';
+        DOM.timerPill.classList.add('warning');
+        DOM.timerPill.classList.remove('danger');
       } else {
-        DOM.timerPill.className = 'timer-pill';
+        DOM.timerPill.classList.remove('warning', 'danger');
       }
     }
   }

@@ -30,7 +30,7 @@
       <!-- Exam Title & Info -->
       <div class="exam-header-compact">
         <h1 class="exam-title">Đánh Giá Năng Lực AI & ML</h1>
-        <p class="exam-desc">40 câu hỏi chuyên sâu (Nền tảng ML, Deep Learning, CV & NLP) • Thời gian: 40 phút</p>
+        <p class="exam-desc">50 câu hỏi chuyên sâu (Nền tảng ML, Deep Learning, CV & NLP) • Thời gian: 60 phút</p>
       </div>
 
       <!-- Section Filters -->
@@ -81,6 +81,26 @@
 
     <!-- Right Column: Bảng câu hỏi & Quick Actions -->
     <aside class="sidebar-column" id="paletteDrawer">
+      <!-- Countdown Timer (60 phút) -->
+      <div class="sidebar-timer-bar">
+        <div class="timer-pill" id="timerPill">
+          <div class="timer-left">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span class="timer-label">Thời gian:</span>
+          </div>
+          <div class="timer-center">
+            <span class="timer-display" id="timerDisplay">60:00</span>
+          </div>
+          <button class="timer-btn" id="timerToggleBtn" title="Tạm dừng / Tiếp tục">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
       <!-- Quick Actions: Sang Đề 2 & Nộp bài -->
       <div class="sidebar-actions">
         <a href="index_v2.html" class="btn-switch-quiz" title="Chuyển sang Đề thi 2 (Nội dung ai_studio_code1.txt)">
