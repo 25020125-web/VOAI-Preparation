@@ -28,7 +28,7 @@
     timeElapsed: 0,
     
     theme: 'dark',
-    fontSize: 'large'    // 'normal' | 'large' (+2 levels default) | 'xlarge'
+    fontSize: 'normal'    // 'normal' (standard balanced) | 'large' | 'xlarge'
   };
 
   // --- DOM SELECTORS ---
@@ -196,8 +196,8 @@
 
   // --- DYNAMIC FONT SIZE CONTROLLER ---
   function loadFontSize() {
-    // Default is 'large' (+4 levels larger: 23px prompt / 21.5px options)
-    const savedSize = localStorage.getItem(STORAGE_KEYS.FONT_SIZE) || 'large';
+    // Default is 'normal' (standard balanced size)
+    const savedSize = localStorage.getItem(STORAGE_KEYS.FONT_SIZE) || 'normal';
     setFontSize(savedSize);
   }
 

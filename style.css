@@ -9,15 +9,15 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
 
-  /* Typography Scales - Elevated +4 Levels (To hơn 2 bậc nữa: 23px / 21.5px) */
-  --font-size-prompt: 23px;          /* Tăng thêm 2 bậc: 19px -> 23px */
-  --line-height-prompt: 1.8;
-  --font-size-option: 21.5px;        /* Tăng thêm 2 bậc: 18px -> 21.5px */
-  --line-height-option: 1.7;
-  --font-size-option-letter: 19px;
-  --option-letter-size: 42px;
-  --font-size-code: 17px;
-  --font-size-explanation: 20px;
+  /* Typography Scales - Clean & Balanced (Giảm cỡ chữ) */
+  --font-size-prompt: 18px;
+  --line-height-prompt: 1.65;
+  --font-size-option: 16.5px;
+  --line-height-option: 1.55;
+  --font-size-option-letter: 15px;
+  --option-letter-size: 34px;
+  --font-size-code: 14.5px;
+  --font-size-explanation: 16px;
 
   /* Dark Theme (Default) */
   --bg-body: #0b0f19;
@@ -65,30 +65,30 @@
 
 /* User dynamic font size modifiers */
 [data-font-size="normal"] {
-  --font-size-prompt: 19px;
-  --font-size-option: 18px;
-  --font-size-option-letter: 16px;
-  --option-letter-size: 36px;
-  --font-size-code: 15px;
-  --font-size-explanation: 17.5px;
+  --font-size-prompt: 18px;
+  --font-size-option: 16.5px;
+  --font-size-option-letter: 15px;
+  --option-letter-size: 34px;
+  --font-size-code: 14.5px;
+  --font-size-explanation: 16px;
 }
 
 [data-font-size="large"] {
-  --font-size-prompt: 23px;
-  --font-size-option: 21.5px;
-  --font-size-option-letter: 19px;
-  --option-letter-size: 42px;
-  --font-size-code: 17px;
-  --font-size-explanation: 20px;
+  --font-size-prompt: 19.5px;
+  --font-size-option: 17.5px;
+  --font-size-option-letter: 16px;
+  --option-letter-size: 36px;
+  --font-size-code: 15px;
+  --font-size-explanation: 17px;
 }
 
 [data-font-size="xlarge"] {
-  --font-size-prompt: 26.5px;
-  --font-size-option: 25px;
-  --font-size-option-letter: 22px;
-  --option-letter-size: 48px;
-  --font-size-code: 19px;
-  --font-size-explanation: 23px;
+  --font-size-prompt: 21.5px;
+  --font-size-option: 19px;
+  --font-size-option-letter: 17px;
+  --option-letter-size: 38px;
+  --font-size-code: 16px;
+  --font-size-explanation: 18.5px;
 }
 
 [data-theme="light"] {
@@ -446,14 +446,143 @@ body {
 }
 
 /* ==========================================================================
-   CENTERED FULL-WIDTH LAYOUT (DRAWER ARCHITECTURE)
+   2-COLUMN LAYOUT: QUESTIONS (LEFT) & BẢNG CÂU HỎI (RIGHT)
    ========================================================================== */
 
 .app-main {
-  max-width: 1060px;
-  margin: 24px auto;
+  max-width: 1440px;
+  margin: 20px auto 40px;
   padding: 0 24px;
-  display: block; /* No right sidebar taking up room! */
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 28px;
+  align-items: start;
+}
+
+.main-questions-column {
+  min-width: 0;
+}
+
+/* Compact In-Page Title for Exam */
+.exam-header-compact {
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.exam-header-compact .exam-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.exam-header-compact .exam-desc {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Right Sidebar: Bảng câu hỏi & Controls */
+.sidebar-column {
+  position: sticky;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.sidebar-actions {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.sidebar-actions .btn-switch-quiz {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  background: var(--purple-bg);
+  color: #c4b5fd;
+  border: 1.5px solid rgba(139, 92, 246, 0.4);
+  transition: var(--transition);
+}
+
+.sidebar-actions .btn-switch-quiz:hover {
+  background: rgba(139, 92, 246, 0.25);
+  border-color: var(--purple);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.sidebar-actions .btn-submit-header {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.sidebar-actions .btn-submit-header:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45);
+}
+
+.palette-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.palette-card-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  background: var(--bg-surface-soft);
+  gap: 8px;
+  color: var(--text-main);
+}
+
+.palette-card-header svg {
+  color: var(--primary);
+}
+
+.palette-card-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-main);
+}
+
+.palette-card-body {
+  padding: 16px 18px 20px;
 }
 
 /* Category Filter Bar */
@@ -550,8 +679,8 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 32px;
-  margin-bottom: 24px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
   box-shadow: var(--shadow-sm);
   transition: var(--transition);
   position: relative;
@@ -924,19 +1053,19 @@ code {
   padding: 6px 0;
 }
 
-/* Options Grid - ENHANCED +4 LEVELS LARGER */
+/* Options Grid */
 .options-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 28px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .option-item {
   display: flex;
   align-items: flex-start;
-  gap: 18px;
-  padding: 20px 24px;
+  gap: 14px;
+  padding: 13px 18px;
   background: var(--bg-surface-soft);
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -1055,91 +1184,32 @@ code {
 }
 
 /* ==========================================================================
-   COLLAPSIBLE QUESTION PALETTE DRAWER (SLIDE-OVER PANEL)
+   QUESTION PALETTE (SIDEBAR COMPONENT)
    ========================================================================== */
 
 .palette-drawer-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 200;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-}
-
-.palette-drawer-overlay.active {
-  opacity: 1;
-  pointer-events: auto;
+  display: none !important;
 }
 
 .palette-drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 390px;
-  max-width: 90vw;
-  background: var(--bg-card);
-  border-left: 1px solid var(--border-color);
-  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.45);
-  z-index: 201;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(100%);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: static;
+  width: 100%;
+  max-width: none;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  z-index: auto;
+  transform: none;
+  transition: none;
+  display: block;
 }
 
 .palette-drawer.active {
-  transform: translateX(0);
-}
-
-.palette-drawer-header {
-  padding: 18px 22px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--bg-surface-soft);
-}
-
-.palette-drawer-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.palette-drawer-title h3 {
-  font-size: 16.5px;
-  font-weight: 800;
-  color: var(--text-main);
+  transform: none;
 }
 
 .palette-close-btn {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 26px;
-  cursor: pointer;
-  line-height: 1;
-  padding: 0 6px;
-  border-radius: var(--radius-sm);
-  transition: var(--transition);
-}
-
-.palette-close-btn:hover {
-  color: var(--danger);
-  background: var(--danger-bg);
-}
-
-.palette-drawer-body {
-  padding: 22px;
-  overflow-y: auto;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  display: none;
 }
 
 .matrix-stats {
@@ -1779,19 +1849,25 @@ code {
 }
 
 /* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .app-main {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .sidebar-column {
+    position: static;
+  }
+}
+
 @media (max-width: 768px) {
-  .header-container {
-    padding: 10px 16px;
-    flex-wrap: wrap;
-  }
-
-  .header-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-
   .app-main {
     padding: 0 14px;
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-column {
+    position: static;
   }
 
   .question-card {
@@ -1799,11 +1875,11 @@ code {
   }
 
   .question-prompt {
-    font-size: 17.5px;
+    font-size: 16.5px;
   }
 
   .option-content {
-    font-size: 16.5px;
+    font-size: 15.5px;
   }
 
   .result-hero {
@@ -1811,15 +1887,11 @@ code {
   }
 
   .score-big {
-    font-size: 44px;
+    font-size: 40px;
   }
 
   .matrix-grid {
-    grid-template-columns: repeat(6, 1fr);
-  }
-
-  .palette-drawer {
-    width: 100vw;
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 

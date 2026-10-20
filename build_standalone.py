@@ -1,7 +1,7 @@
 """
 Build script to generate offline standalone HTML files for both quiz versions:
 - Exam 1 (ai_studio_code.txt): standalone_quiz.html & standalone_quiz_v1.html
-- Exam 2 (ai_studio_code2.txt): standalone_quiz_v2.html
+- Exam 2 (ai_studio_code 3.txt): standalone_quiz_v2.html
 """
 
 def build():
@@ -43,13 +43,13 @@ def build():
     html2 = html2.replace('<link rel="stylesheet" href="style.css">', f'<style>\n{css}\n</style>')
     html2 = html2.replace('<script src="quiz_data_v2.js"></script>', f'<script>\n{quiz_data_v2}\n</script>')
     html2 = html2.replace('<script src="app.js"></script>', f'<script>\n{app_js}\n</script>')
-    # In standalone mode, link switcher to standalone_quiz.html
-    html2 = html2.replace('href="index.html"', 'href="standalone_quiz.html"')
+    # In standalone mode, link switcher to standalone_quiz_v1.html
+    html2 = html2.replace('href="index.html"', 'href="standalone_quiz_v1.html"')
 
     with open('standalone_quiz_v2.html', 'w', encoding='utf-8') as f:
         f.write(html2)
 
-    print(f"Generated standalone_quiz_v2.html ({len(html2)} bytes) [Exam 2: ai_studio_code2.txt]")
+    print(f"Generated standalone_quiz_v2.html ({len(html2)} bytes) [Exam 2: ai_studio_code 3.txt]")
 
 if __name__ == '__main__':
     build()

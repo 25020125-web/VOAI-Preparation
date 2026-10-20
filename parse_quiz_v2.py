@@ -5,9 +5,11 @@ import sys
 
 def parse_v2():
     base_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else '.'
-    filepath = os.path.join(base_dir, 'ai_studio_code2.txt')
+    filepath = os.path.join(base_dir, 'ai_studio_code 3.txt')
     if not os.path.exists(filepath):
-        filepath = 'ai_studio_code2.txt'
+        filepath = os.path.join(base_dir, 'ai_studio_code2.txt')
+    if not os.path.exists(filepath):
+        filepath = 'ai_studio_code 3.txt'
 
     with open(filepath, 'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -94,7 +96,7 @@ def parse_v2():
     with open(js_path, 'w', encoding='utf-8') as f:
         f.write(js_content)
 
-    print(f"Successfully processed {len(parsed)} questions from ai_studio_code2.txt into {json_path} and {js_path}!")
+    print(f"Successfully processed {len(parsed)} questions from {os.path.basename(filepath)} into {json_path} and {js_path}!")
 
 if __name__ == '__main__':
     parse_v2()
